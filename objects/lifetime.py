@@ -7,7 +7,7 @@ from objects.enums.netsuite import EnumDescription
 
 
 @dataclasses.dataclass
-class TransactionLT(Transaction):
+class NodeTransaction(Transaction):
     """
     A Lifetime Transaction Node, used to validate for sequencing.
 
@@ -46,8 +46,10 @@ class SequencePipeline:
         This will allow us to know when erroneous transactions are created, when multiple policies are
         under the same insured, and any other check we need regarding the sequence of transactions.
 
+        Currently, expects the nodes inside to be ordered. Order it by Transaction ID.
+
         """
-        self.curr_node: TransactionLT | None = None
+        self.curr_node: NodeTransaction | None = None
 
     @staticmethod
     def _verify_issuance_sequencing(curr_node, check_node) -> bool:
@@ -164,7 +166,7 @@ class SequencePipeline:
                 pass
         return True
 
-    def _validate_node_sequence(self, node: TransactionLT) -> bool:
+    def _validate_node_sequence(self, node: NodeTransaction) -> bool:
         """
         check node and curr node
         :param node:
@@ -214,7 +216,7 @@ class SequencePipeline:
         else:
             raise KeyError(f"Unrecognized node description: {self.curr_node.description}")
 
-    def run_pipline(self, nodes: list[TransactionLT], verbose: bool = False) -> (bool, str):
+    def run_pipline(self, nodes: list[NodeTransaction], verbose: bool = False) -> (bool, str):
         for node in nodes:
             if verbose:
                 print()

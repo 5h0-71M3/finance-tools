@@ -5,7 +5,7 @@ import pandas as pd
 from dirlin import Folder
 
 from objects.enums.netsuite import EnumDescription
-from objects.lifetime import TransactionLT, SequencePipeline
+from objects.lifetime import NodeTransaction, SequencePipeline
 
 
 def test_transaction_node_init():
@@ -15,8 +15,8 @@ def test_transaction_node_init():
     create_date = datetime(2024, 4, 14, 12, 18)
     description = EnumDescription("Issuance")
 
-    t = TransactionLT(key, exid, "ifasd9fiasd0f9iasd09f",description, report_date, create_date, create_date, Decimal(f"2.00"), "No")
-    assert isinstance(t, TransactionLT)
+    t = NodeTransaction(key, exid, "ifasd9fiasd0f9iasd09f", description, report_date, create_date, create_date, Decimal(f"2.00"), "No")
+    assert isinstance(t, NodeTransaction)
 
 
 def test_pipeline():
@@ -39,7 +39,7 @@ def test_pipeline():
     }
 
     nodes = [
-        TransactionLT(
+        NodeTransaction(
             key=k,
             transaction_id=tid,
             description=enum_mapping[d],
