@@ -46,8 +46,10 @@ class TestCarrierDetailsSection:
         carrier_bound = self.tbp * self.quota
         carrier_comm = carrier_bound * self.commission_perc
 
+        print(carrier_comm)
+
         valid_comm = validate_carrier_commission_to_coalition(
-            carrier_bound_premium=self.tbp,
+            carrier_bound_premium=carrier_bound,
             carrier_commission_percent=self.commission_perc,
             carrier_commission_amount=carrier_comm
         )

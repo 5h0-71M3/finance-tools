@@ -80,5 +80,9 @@ def validate_carrier_commission_to_coalition(
     """
     expected_carrier_commission = round(carrier_bound_premium * carrier_commission_percent, 2)
     if abs(expected_carrier_commission - carrier_commission_amount) > variance_cap:
+        # print(
+        #     f"Expected Carrier Commission: {expected_carrier_commission}\n"
+        #     f"Given Carrier Commission: {carrier_commission_amount}"
+        # )
         return False
     return True

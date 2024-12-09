@@ -31,7 +31,7 @@ class TestSurchargeSection:
 
         """
         valid_state = "nj"
-        non_valid_state = "nj"
+        non_valid_state = "ky"
         surcharge = 10
         no_surcharge = 0
 
@@ -59,7 +59,7 @@ class TestSurchargeSection:
 
         pass_all_valid = validate_kentucky_surcharges(valid_state, ky_ins, ky_muni, ky_collection, total)
         fail_non_state_with_values = validate_kentucky_surcharges(invalid_state, ky_ins, ky_muni, ky_collection, total)
-        pass_non_state_no_values = validate_kentucky_surcharges(valid_state, 0, 0, 0, total)
+        pass_non_state_no_values = validate_kentucky_surcharges(invalid_state, 0, 0, 0, total)
         fail_surcharge_total_variance = validate_kentucky_surcharges(valid_state, ky_ins, ky_muni, ky_collection, 200)
 
         assert pass_all_valid is True

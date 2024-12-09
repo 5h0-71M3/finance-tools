@@ -44,7 +44,7 @@ def validate_pliga_fee(
     if insured_state != "NJ" and pliga_fee == 0:
         return True
     # non-NJ state with a PLIGA fee should fail
-    elif insured_state != "NJ" and 0 > pliga_fee > 0:
+    elif insured_state != "NJ" and pliga_fee != 0:
         return False
     # The state is in NJ and there is no PLIGA fee - confirm this
     if insured_state == "NJ" and pliga_fee == 0:
