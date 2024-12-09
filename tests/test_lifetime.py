@@ -5,7 +5,7 @@ import pandas as pd
 from dirlin import Folder
 
 from objects.enums.netsuite import EnumDescription
-from objects.lifetime import NodeTransaction, SequencePipeline
+from src.lifetime.objects import NodeTransaction, SequencePipeline
 
 
 def test_transaction_node_init():
