@@ -2,8 +2,8 @@ import dataclasses
 from datetime import datetime
 from decimal import Decimal
 
-from objects.base import Transaction
-from objects.enums.netsuite import EnumDescription
+from src.objects.base import Transaction
+from src.objects.enums.netsuite import EnumDescription
 
 
 @dataclasses.dataclass

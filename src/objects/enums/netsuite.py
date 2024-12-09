@@ -11,6 +11,3 @@ class EnumDescription(Enum):
     issuance = "Issuance"
     reinstatement = "Reinstatement"
     soft_delete = "Soft Delete"
-
-
-
