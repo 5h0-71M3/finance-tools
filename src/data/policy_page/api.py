@@ -6,15 +6,16 @@ from typing import Optional
 
 import pandas as pd
 
-from src.data.metadata.looker.looker_limit import looker_limit_field_mapping, looker_limit_columns
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_field_mapping, \
-    netsuite_carrierv1_commission_percentage, netsuite_carrierv1_quota_share, netsuite_carrierv1_commission_amount, \
-    netsuite_carrierv1_net_premium, netsuite_carrierv1_bound_premium
-from src.data.metadata.netsuite.netsuite_limit import netsuite_limit_field_mapping, netsuite_limit_columns
-from src.data.metadata.netsuite.netsuite_surcharge import netsuite_surcharge_field_mapping
-from src.data.reporting.reports import Report
+from src.data._object import Report
 from src.data.structs.policy_container import TransactionStack, CoverageDetailTransactionLine
 from src.file_handling.directory_handler import Directory
+
+from src.data.metadata import (
+    NetsuiteCarrierV1Metadata,
+    NetsuiteLimitMetadata,
+    LookerLimitMetadata,
+    NetsuiteSurchargeMetadata
+)
 
 
 # =========================================
@@ -23,19 +24,19 @@ from src.file_handling.directory_handler import Directory
 class CarrierDetails(Report):
     def __init__(self):
         self.df = self._format()
+        self._metadata = NetsuiteCarrierV1Metadata()
 
     def _format(self) -> pd.DataFrame:
         df = Directory.DOWNLOADS.open_recent(filename_pattern="DataQualityCarrierV1CheckSTMResults")
-        df = df.rename(columns=netsuite_carrierv1_field_mapping)
+        df = df.rename(columns=self._metadata.field_mapping)
 
         # Combining the quota share column with the Commission Percentage Columns
-        _percentage_columns = netsuite_carrierv1_commission_percentage + netsuite_carrierv1_quota_share
-        _percentage_columns.append('coalition_commission_percent')
+        _percentage_columns = self._metadata.percentage_agg_columns
         for column in _percentage_columns:
             df[column] = self._format_percentage_column(df[column])
 
         # Formatting the Premium Columns adding commission, net premium, and bound premium
-        _premium_columns = netsuite_carrierv1_commission_amount + netsuite_carrierv1_net_premium + netsuite_carrierv1_bound_premium
+        _premium_columns = self._metadata.premium_agg_columns
         for column in _premium_columns:
             df[column] = df[column].fillna(0)
         return df
@@ -50,14 +51,16 @@ class CoverageDetails(Report):
     """
     def __init__(self, filename: Optional[str] = None):
         self.df = self._format()
+        self._metadata = NetsuiteLimitMetadata()
+        self._looker_metadata = LookerLimitMetadata()
         self.coverage_table = self._generate_platform_coverage_table()
 
     def _format(self, filename: Optional[str] = None) -> pd.DataFrame:
         df = Directory.DOWNLOADS.open_recent(filename_pattern="DataQualityLimitsSTMResults") if filename is None else Directory.DOWNLOADS.open(filename)
-        df = df.rename(columns=netsuite_limit_field_mapping)
+        df = df.rename(columns=self._metadata.field_mapping)
 
         # formatting as a Limit field
-        for coverage in netsuite_limit_columns:
+        for coverage in self._metadata.limit_columns:
             df[coverage] = self._format_limit_column(df[coverage])
         return df
 
@@ -69,9 +72,9 @@ class CoverageDetails(Report):
         :return:
         """
         looker_df = Directory.DOWNLOADS.open_recent(filename_pattern="policy limits v1")
-        looker_df = looker_df.rename(columns=looker_limit_field_mapping)
+        looker_df = looker_df.rename(columns=self._looker_metadata.field_mapping)
 
-        for limit in looker_limit_columns:
+        for limit in self._looker_metadata.limit_columns:
             looker_df[limit] = self._format_limit_column(looker_df[limit])
 
         coverage_table = {}  # policy#: {coverages}
@@ -139,8 +142,9 @@ class CoverageDetails(Report):
 class SurchargeSection(Report):
     def __init__(self):
         self.df = self._format()
+        self._metadata = NetsuiteSurchargeMetadata()
 
     def _format(self) -> pd.DataFrame:
         df = Directory.DOWNLOADS.open_recent(filename_pattern="DataQualitySurchargeSTMResults")
-        df = df.rename(columns=netsuite_surcharge_field_mapping)
+        df = df.rename(columns=self._metadata.field_mapping)
         return df

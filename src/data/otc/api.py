@@ -2,7 +2,7 @@
 import pandas as pd
 
 from src.data.metadata.netsuite.ns_reports import FieldNamingConventions
-from src.data.reporting.reports import Report
+from src.data._object import Report
 from src.file_handling.directory_handler import Directory
 
 

@@ -1,4 +1,4 @@
-from src.data.reporting.policy_page import validate_net_premium, validate_carrier_bound_premium, \
+from src.data.policy_page import validate_net_premium, validate_carrier_bound_premium, \
     validate_carrier_net_premium, validate_carrier_commission_to_coalition
 
 

@@ -1,4 +1,4 @@
-from src.data.reporting.policy_page import validate_surcharge, validate_pliga_fee, validate_kentucky_surcharges
+from src.data.policy_page import validate_surcharge, validate_pliga_fee, validate_kentucky_surcharges
 
 
 class TestSurchargeSection:
