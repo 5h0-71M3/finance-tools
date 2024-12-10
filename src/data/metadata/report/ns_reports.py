@@ -1,4 +1,7 @@
-class FieldNamingConventions:
+from src.data._object import Metadata
+
+
+class FieldNamingConventions(Metadata):
     nj_sla_query = {
         "Quote Coalition Policy Number": "quota_coalition_policy_number",
         "Quote Status": "quote_status",

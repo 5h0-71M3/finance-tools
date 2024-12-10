@@ -1,32 +1,42 @@
+"""Metadata consists of column metadata (to normalize the data) and checks (to validate it)
+
+The directory structure reflects this by splitting metadata into 2 directories:
+    1. check: holds modules related to checks that are performed on the data
+    2. report: holds modules related to mapping and updating columns
+
+"""
+from typing import Callable
+
 # Imports for Netsuite Related Metadata
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_field_mapping as _netsuite_carrierv1_field_mapping
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_commission_percentage as _netsuite_carrierv1_commission_percentage
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_bound_premium as _netsuite_carrierv1_bound_premium
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_net_premium as _netsuite_carrierv1_net_premium
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_commission_amount as _netsuite_carrierv1_commission_amount
-from src.data.metadata.netsuite.carrier_v1 import netsuite_carrierv1_quota_share as _netsuite_carrierv1_quota_share
+from src.data._object import Metadata
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_field_mapping as _netsuite_carrierv1_field_mapping
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_commission_percentage as _netsuite_carrierv1_commission_percentage
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_bound_premium as _netsuite_carrierv1_bound_premium
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_net_premium as _netsuite_carrierv1_net_premium
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_commission_amount as _netsuite_carrierv1_commission_amount
+from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_quota_share as _netsuite_carrierv1_quota_share
 
-from src.data.metadata.netsuite.netsuite_limit import netsuite_limit_field_mapping as _netsuite_limit_field_mapping
-from src.data.metadata.netsuite.netsuite_limit import netsuite_limit_columns as _netsuite_limit_columns
+from src.data.metadata.report.netsuite_limit import netsuite_limit_field_mapping as _netsuite_limit_field_mapping
+from src.data.metadata.report.netsuite_limit import netsuite_limit_columns as _netsuite_limit_columns
 
-from src.data.metadata.netsuite.netsuite_surcharge import netsuite_surcharge_field_mapping as _netsuite_surcharge_field_mapping
-from src.data.metadata.netsuite.ns_reports import FieldNamingConventions
+from src.data.metadata.report.netsuite_surcharge import netsuite_surcharge_field_mapping as _netsuite_surcharge_field_mapping
+from src.data.metadata.report.ns_reports import FieldNamingConventions
 
 # Imports for Looker Related Metadata
-from src.data.metadata.looker.looker_limit import looker_limit_field_mapping as _looker_limit_field_mapping
-from src.data.metadata.looker.looker_limit import looker_limit_columns as _looker_limit_columns
+from src.data.metadata.report.looker_limit import looker_limit_field_mapping as _looker_limit_field_mapping
+from src.data.metadata.report.looker_limit import looker_limit_columns as _looker_limit_columns
 
 # Imports for Netsuite Related Data Quality Checks
-from src.data.metadata.data_quality.policy_page import carrier_details_section as _dq_cd
-from src.data.metadata.data_quality.policy_page import coverage_details_section as _dq_covd
-from src.data.metadata.data_quality.policy_page import policy_details_section as _dq_pd
-from src.data.metadata.data_quality.policy_page import surcharge_section as _sq_s
+from src.data.metadata.check.policy_page import carrier_details_section as _dq_cd
+from src.data.metadata.check.policy_page import coverage_details_section as _dq_covd
+from src.data.metadata.check.policy_page import policy_details_section as _dq_pd
+from src.data.metadata.check.policy_page import surcharge_section as _sq_s
 
 
 #########################################
 # NETSUITE METADATA SECTION
 #########################################
-class NetsuiteCarrierV1Metadata:
+class NetsuiteCarrierV1Metadata(Metadata):
     """namespace for metadata related to the CarrierV1 report
 
     Represents the Carrier Details Section.
@@ -64,8 +74,19 @@ class NetsuiteCarrierV1Metadata:
     validate_carrier_bound_premium = _dq_cd.validate_carrier_bound_premium
     validate_carrier_commission = _dq_cd.validate_carrier_commission_to_coalition
 
+    @classmethod
+    def _check_functions(cls) -> dict[str, Callable[..., bool]]:
+        # Taken from the props
+        func_map = {
+            "validate_net_premium": cls.validate_net_premium,
+            "validate_carrier_net_premium": cls.validate_carrier_net_premium,
+            "validate_carrier_bound_premium": cls.validate_carrier_bound_premium,
+            "validate_carrier_commission": cls.validate_carrier_commission,
+        }
+        return func_map
 
-class NetsuiteLimitMetadata:
+
+class NetsuiteLimitMetadata(Metadata):
     """namespace for metadata related to the Netsuite Limit Report
 
     If any new limit columns are added, needs tobe added here
@@ -81,7 +102,7 @@ class NetsuiteLimitMetadata:
     recon_agg_limit = _dq_covd.recon_aggregate_total_limit_balance
 
 
-class NetsuiteSurchargeMetadata:
+class NetsuiteSurchargeMetadata(Metadata):
     """namespace for metadata related to the Netsuite Surcharge Report
 
     Any new surcharges, or surcharges not identified here will need to be added to the report
@@ -100,7 +121,7 @@ class NetsuiteSurchargeMetadata:
 #########################################
 # LOOKER METADATA SECTION
 #########################################
-class LookerLimitMetadata:
+class LookerLimitMetadata(Metadata):
     """namespace for metadata related to the Looker Limit Report
 
     It looks like we are using this report to compare Looker Data to Netsuite

@@ -1,12 +1,29 @@
 from abc import abstractmethod, ABC
-from typing import Optional
+from collections.abc import Callable
+
+from typing import Optional, TypeVar
 
 import pandas as pd
 
 
+class Metadata:
+
+    @classmethod
+    def _check_functions(cls) -> dict[str, Callable[..., bool]]:
+        """creates a list of data check functions associated with the metadata
+
+        :return: a list of all the checks you want to / can run
+        """
+        ...
+
+
+T = TypeVar("T", bound=Metadata)
+"""Adding type T to allow for Metadata typing without errors in IDE. Denotes any Metadata"""
+
+
 class Report(ABC):
     df: pd.DataFrame
-    _metadata: None | type = None
+    _metadata: T
 
     @abstractmethod
     def _format(self, *args, **kwargs) -> pd.DataFrame:
@@ -29,7 +46,7 @@ class Report(ABC):
         """
         ...
 
-    def _run(self, *args, **kwargs) -> pd.DataFrame:
+    def _run_checks(self, *args, **kwargs) -> pd.DataFrame:
         """function for running and validating the data checks on the report
 
         call on the self._metadata to call the function (denoted with validate* in the keyword).

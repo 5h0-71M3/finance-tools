@@ -1,5 +1,6 @@
-"""
-Each one of these report is a Netsuite report that reflects a Policy Page on Netsuite
+"""The REPORT API for Policy Pages
+
+Each one of these reports is a Netsuite report that reflects a Policy Page on Netsuite
 """
 
 from typing import Optional
@@ -39,7 +40,11 @@ class CarrierDetails(Report):
         _premium_columns = self._metadata.premium_agg_columns
         for column in _premium_columns:
             df[column] = df[column].fillna(0)
+        print(f"Running Carrier Details formatting...")
         return df
+
+    def _run_checks(self, *args, **kwargs) -> pd.DataFrame:
+        ...
 
 
 class CoverageDetails(Report):
