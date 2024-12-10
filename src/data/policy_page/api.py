@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 
 from src.data._object import Report
-from src.data.structs.policy_container import TransactionStack, CoverageDetailTransactionLine
+from src.lifetime.policy_container import TransactionStack, CoverageDetailTransactionLine
 from src.file_handling.directory_handler import Directory
 
 from src.data.metadata import (

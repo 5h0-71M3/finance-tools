@@ -6,6 +6,7 @@ import pandas as pd
 
 class Report(ABC):
     df: pd.DataFrame
+    _metadata: None | type = None
 
     @abstractmethod
     def _format(self, *args, **kwargs) -> pd.DataFrame:
@@ -25,6 +26,19 @@ class Report(ABC):
         :param args: any argument you may need to format the report
         :param kwargs: any keyword argument you may need to format the report
         :return: a formatted based reported as a DataFrame
+        """
+        ...
+
+    def _run(self, *args, **kwargs) -> pd.DataFrame:
+        """function for running and validating the data checks on the report
+
+        call on the self._metadata to call the function (denoted with validate* in the keyword).
+        Not sure on what errors should create, but might need to be some type of report or
+        based on an argument.
+
+        Can add the checks to columns, create a validation report, or create and upload file
+        to fix.
+
         """
         ...
 

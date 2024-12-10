@@ -16,10 +16,11 @@ class DataQualityDailyTransaction(Report):
         :param remove_financial_transactions: will remove financial based transactions like a Soft Delete or Binder Edits
         """
         self.df = self._format(remove_financial_transactions)
+        self._metadata = FieldNamingConventions()
 
     def _format(self, remove_financial_transactions: bool = False) -> pd.DataFrame:
         df = Directory.DOWNLOADS.open_recent(filename_pattern="DataQualityDailyTransaction")
-        df = df.rename(columns=FieldNamingConventions.data_quality_transaction)
+        df = df.rename(columns=self._metadata.data_quality_transaction)
 
         if remove_financial_transactions:
             filter_be_sd_complete = df["be_sd_complete"] == "Yes"
@@ -34,8 +35,12 @@ class DataQualityDailyTransaction(Report):
         return df
 
 
-class NewJerseySLAQuery:
+class NewJerseySLAQuery(Report):
     def __init__(self):
         df = Directory.DOWNLOADS.open_recent(filename_pattern="NJ SLA Query")
-        df = df.rename(columns=FieldNamingConventions.nj_sla_query)
         self.df = df
+        self._metadata = FieldNamingConventions()
+
+    def _format(self) -> pd.DataFrame:
+        df = self.df.rename(columns=self._metadata.nj_sla_query)
+        return df

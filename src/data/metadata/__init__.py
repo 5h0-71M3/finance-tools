@@ -16,6 +16,12 @@ from src.data.metadata.netsuite.ns_reports import FieldNamingConventions
 from src.data.metadata.looker.looker_limit import looker_limit_field_mapping as _looker_limit_field_mapping
 from src.data.metadata.looker.looker_limit import looker_limit_columns as _looker_limit_columns
 
+# Imports for Netsuite Related Data Quality Checks
+from src.data.metadata.data_quality.policy_page import carrier_details_section as _dq_cd
+from src.data.metadata.data_quality.policy_page import coverage_details_section as _dq_covd
+from src.data.metadata.data_quality.policy_page import policy_details_section as _dq_pd
+from src.data.metadata.data_quality.policy_page import surcharge_section as _sq_s
+
 
 #########################################
 # NETSUITE METADATA SECTION
@@ -52,6 +58,12 @@ class NetsuiteCarrierV1Metadata:
     _percentage_agg_columns = commission_percentage_columns + quota_share_columns
     percentage_agg_columns = _percentage_agg_columns.append('coalition_commission_percent')
 
+    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
+    validate_net_premium = _dq_cd.validate_net_premium
+    validate_carrier_net_premium = _dq_cd.validate_carrier_net_premium
+    validate_carrier_bound_premium = _dq_cd.validate_carrier_bound_premium
+    validate_carrier_commission = _dq_cd.validate_carrier_commission_to_coalition
+
 
 class NetsuiteLimitMetadata:
     """namespace for metadata related to the Netsuite Limit Report
@@ -65,6 +77,9 @@ class NetsuiteLimitMetadata:
     limit_columns = _netsuite_limit_columns
     """List of only the limit columns"""
 
+    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
+    recon_agg_limit = _dq_covd.recon_aggregate_total_limit_balance
+
 
 class NetsuiteSurchargeMetadata:
     """namespace for metadata related to the Netsuite Surcharge Report
@@ -75,6 +90,11 @@ class NetsuiteSurchargeMetadata:
 
     field_mapping = _netsuite_surcharge_field_mapping
     """High Level Metadata (IID, TID) + Surcharge Field mapping for normalization"""
+
+    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
+    validate_surcharge_total = _sq_s.validate_surcharge
+    validate_kentucky_surcharge = _sq_s.validate_kentucky_surcharges
+    validate_pliga_fee = _sq_s.validate_pliga_fee
 
 
 #########################################
@@ -91,3 +111,6 @@ class LookerLimitMetadata:
 
     limit_columns = _looker_limit_columns
     """List of only the looker limit, sublimit, and retention columns"""
+
+    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
+    recon_agg_limit = _dq_covd.recon_aggregate_total_limit_balance
