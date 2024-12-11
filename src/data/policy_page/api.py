@@ -7,8 +7,8 @@ from typing import Optional
 
 import pandas as pd
 
-from src.data._object import Report
-from src.lifetime.policy_container import TransactionStack, CoverageDetailTransactionLine
+from src.data.metadata._object import Report
+from src.data.insured_page import TransactionStack, CoverageDetailTransactionLine
 from src.file_handling.directory_handler import Directory
 
 from src.data.metadata import (
@@ -119,7 +119,7 @@ class CoverageDetails(Report):
 
     def create_stack_mapping(self) -> dict[str, TransactionStack]:
         """
-        Generates a TransactionStack mapping based on Policy# so that the policy can be checked over its lifetime
+        Generates a TransactionStack mapping based on Policy# so that the policy can be checked over its insured_page
 
         :return: uses the tools from the lib.structs library to perform sorting and data parsing
         """

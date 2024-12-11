@@ -1,5 +1,5 @@
-from src.data.policy_page import validate_net_premium, validate_carrier_bound_premium, \
-    validate_carrier_net_premium, validate_carrier_commission_to_coalition
+from src.data.metadata.check.policy_page.carrier_details_section import validate_net_premium, \
+    validate_carrier_bound_premium, validate_carrier_net_premium, validate_carrier_commission_to_coalition
 
 
 class TestCarrierDetailsSection:

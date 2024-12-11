@@ -1,4 +1,4 @@
-from src.data._object import Metadata
+from src.data.metadata._object import Metadata
 
 
 class FieldNamingConventions(Metadata):

@@ -8,7 +8,7 @@ The directory structure reflects this by splitting metadata into 2 directories:
 from typing import Callable
 
 # Imports for Netsuite Related Metadata
-from src.data._object import Metadata
+from src.data.metadata._object import Metadata
 from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_field_mapping as _netsuite_carrierv1_field_mapping
 from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_commission_percentage as _netsuite_carrierv1_commission_percentage
 from src.data.metadata.report.carrier_v1 import netsuite_carrierv1_bound_premium as _netsuite_carrierv1_bound_premium
@@ -26,12 +26,6 @@ from src.data.metadata.report.ns_reports import FieldNamingConventions
 from src.data.metadata.report.looker_limit import looker_limit_field_mapping as _looker_limit_field_mapping
 from src.data.metadata.report.looker_limit import looker_limit_columns as _looker_limit_columns
 
-# Imports for Netsuite Related Data Quality Checks
-from src.data.metadata.check.policy_page import carrier_details_section as _dq_cd
-from src.data.metadata.check.policy_page import coverage_details_section as _dq_covd
-from src.data.metadata.check.policy_page import policy_details_section as _dq_pd
-from src.data.metadata.check.policy_page import surcharge_section as _sq_s
-
 
 #########################################
 # NETSUITE METADATA SECTION
@@ -42,6 +36,8 @@ class NetsuiteCarrierV1Metadata(Metadata):
     Represents the Carrier Details Section.
     If a carrier is added, this section would need to be updated as well.
     """
+
+    filename = "DataQualityCarrierV1CheckSTMResults"
 
     field_mapping = _netsuite_carrierv1_field_mapping
     """High Level Metadata (IID, TID) + Carrier Detail section mapping for normalization. Used for rename operations."""
@@ -68,23 +64,6 @@ class NetsuiteCarrierV1Metadata(Metadata):
     _percentage_agg_columns = commission_percentage_columns + quota_share_columns
     percentage_agg_columns = _percentage_agg_columns.append('coalition_commission_percent')
 
-    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
-    validate_net_premium = _dq_cd.validate_net_premium
-    validate_carrier_net_premium = _dq_cd.validate_carrier_net_premium
-    validate_carrier_bound_premium = _dq_cd.validate_carrier_bound_premium
-    validate_carrier_commission = _dq_cd.validate_carrier_commission_to_coalition
-
-    @classmethod
-    def _check_functions(cls) -> dict[str, Callable[..., bool]]:
-        # Taken from the props
-        func_map = {
-            "validate_net_premium": cls.validate_net_premium,
-            "validate_carrier_net_premium": cls.validate_carrier_net_premium,
-            "validate_carrier_bound_premium": cls.validate_carrier_bound_premium,
-            "validate_carrier_commission": cls.validate_carrier_commission,
-        }
-        return func_map
-
 
 class NetsuiteLimitMetadata(Metadata):
     """namespace for metadata related to the Netsuite Limit Report
@@ -98,9 +77,6 @@ class NetsuiteLimitMetadata(Metadata):
     limit_columns = _netsuite_limit_columns
     """List of only the limit columns"""
 
-    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
-    recon_agg_limit = _dq_covd.recon_aggregate_total_limit_balance
-
 
 class NetsuiteSurchargeMetadata(Metadata):
     """namespace for metadata related to the Netsuite Surcharge Report
@@ -111,11 +87,6 @@ class NetsuiteSurchargeMetadata(Metadata):
 
     field_mapping = _netsuite_surcharge_field_mapping
     """High Level Metadata (IID, TID) + Surcharge Field mapping for normalization"""
-
-    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
-    validate_surcharge_total = _sq_s.validate_surcharge
-    validate_kentucky_surcharge = _sq_s.validate_kentucky_surcharges
-    validate_pliga_fee = _sq_s.validate_pliga_fee
 
 
 #########################################
@@ -132,6 +103,3 @@ class LookerLimitMetadata(Metadata):
 
     limit_columns = _looker_limit_columns
     """List of only the looker limit, sublimit, and retention columns"""
-
-    # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
-    recon_agg_limit = _dq_covd.recon_aggregate_total_limit_balance

@@ -6,7 +6,48 @@ from typing import Optional, TypeVar
 import pandas as pd
 
 
+class CheckSet:
+    """class that handles a set of validations that the metadata uses
+
+    Can be viewed as loading the data to the directory. Every report
+    will be able to output an error log
+
+    """
+    validation_mapping: dict = {
+        "id": [],
+        "result": [],
+        "note": [],
+        "test": []
+    }
+    """Used to make a dataframe once the validation runs"""
+
+    @abstractmethod
+    def _verify_fields(self, df: pd.DataFrame) -> pd.DataFrame:
+        """verify that all the expected fields (and their names) are in the dataframe
+
+        Raise an error if field is missing or misnamed.
+
+        :param df: any dataframe, the function will check to make sure the names are expected
+
+        """
+        ...
+
+
 class Metadata:
+    """Metadata can be seen as the information that's used to transform the data
+
+
+    Any class inheriting from this class needs to assign the following attributes:
+        *filename*: (str) the naming pattern for the file associated with the report
+
+        *field_mapping*: (dict) a dictionary that maps the raw field names to the normalized
+
+        *checks*: (CheckSet): an object that defines the set of validations
+
+    """
+    filename: str
+    field_mapping: dict
+    checks: CheckSet
 
     @classmethod
     def _check_functions(cls) -> dict[str, Callable[..., bool]]:

@@ -3,19 +3,20 @@ def validate_net_premium(
         coalition_commission_percent: float,
         net_premium: float,
         variance_cap: float = .02
-) -> bool:
+) -> tuple[bool, float]:
     """Expected formula TBP * (1-commission%)
 
     :param variance_cap: the highest variance we want before marking it as an error
     :param total_bound_premium: the total premium of the policy
     :param coalition_commission_percent: the Coalition Commission percent of the policy
     :param net_premium:
-    :return:
+
+    :return: bool of the results and the expected value
     """
     expected_net_premium = round(total_bound_premium * (1 - coalition_commission_percent), 2)
     if abs(expected_net_premium - net_premium) > variance_cap:
-        return False
-    return True
+        return False, expected_net_premium
+    return True, expected_net_premium
 
 
 def validate_carrier_bound_premium(
@@ -45,7 +46,7 @@ def validate_carrier_net_premium(
         carrier_commission_percent: float,
         quota_share: float,
         variance_cap: float = .02
-) -> bool:
+) -> tuple[bool, float]:
     """Expected Formula for Carrier Net Premium => (TBP * Quota Share) - ((TBP * Quota Share) * Carrier Commission Percent)
 
     :param total_bound_premium: the total premium of the policy
@@ -58,8 +59,8 @@ def validate_carrier_net_premium(
     """
     expected_carrier_net_premium = round(total_bound_premium * ((1 - carrier_commission_percent) * quota_share), 2)
     if abs(expected_carrier_net_premium - carrier_net_premium) > variance_cap:
-        return False
-    return True
+        return False, expected_carrier_net_premium
+    return True, expected_carrier_net_premium
 
 
 def validate_carrier_commission_to_coalition(

@@ -2,7 +2,7 @@
 import pandas as pd
 
 from src.data.metadata.report.ns_reports import FieldNamingConventions
-from src.data._object import Report
+from src.data.metadata._object import Report
 from src.file_handling.directory_handler import Directory
 
 
