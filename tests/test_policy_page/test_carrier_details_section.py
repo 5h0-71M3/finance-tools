@@ -1,4 +1,4 @@
-from src.data.metadata.check.policy_page.carrier_details_section import validate_net_premium, \
+from src.pipeline.checks.netsuite.carrier_details_section import validate_net_premium, \
     validate_carrier_bound_premium, validate_carrier_net_premium, validate_carrier_commission_to_coalition
 
 
@@ -23,7 +23,7 @@ class TestCarrierDetailsSection:
         valid_carrier_bound = validate_carrier_bound_premium(
             total_bound_premium=self.tbp,
             carrier_bound_premium=carrier_bound_premium,
-            quota_share=self.quota
+            carrier_quota_share=self.quota
         )
 
         assert valid_carrier_bound is True
@@ -37,7 +37,7 @@ class TestCarrierDetailsSection:
             total_bound_premium=self.tbp,
             carrier_net_premium=carrier_net,
             carrier_commission_percent=self.commission_perc,
-            quota_share=self.quota
+            carrier_quota_share=self.quota
         )
 
         assert valid_carrier_net is True
