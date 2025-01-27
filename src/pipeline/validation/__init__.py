@@ -1,0 +1,1 @@
+from src.pipeline.validation.carrier_details import CarrierDetailsValidation
