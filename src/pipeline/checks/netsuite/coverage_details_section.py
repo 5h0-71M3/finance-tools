@@ -37,10 +37,8 @@ def validate_limit_signature_matches_tbp(tbp: float, base_limit: int) -> bool:
     :return: pass / fail
     """
     if tbp < 0:
-        if base_limit < 0:
+        if base_limit <= 0:
             return True
-        else:
-            return False
     else:
         if base_limit >= 0:
             return True

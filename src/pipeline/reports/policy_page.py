@@ -1,6 +1,6 @@
 from dirlin.pipeline import Report
 
-from src.pipeline.reports.metadata import (
+from src.pipeline.reports.metadata.carrier_v1 import (
     netsuite_carrierv1_field_mapping,
     netsuite_carrierv1_quota_share,
     netsuite_carrierv1_commission_amount,

@@ -19,7 +19,7 @@ allianz_us_field_mapping = {
     "Total Limit": "total_limit",
     "Allianz Quota Share %": "allianz_quota_share",
     "Allianz Limit of Liability": "allianz_limit",
-    "SIR / Attachment Point": "sir",
+    "SIR / Attachment Point": "sir_limit",
     "Total Bound Premium": "tbp",
     "Allianz Bound Premium": "allianz_bound_premium",
     "Total Earned Premium": "total_earned_premium",
@@ -115,7 +115,7 @@ allianz_int_columns = [
     "aggregate_limit",
     "total_limit",
     "allianz_limit",
-    "sir",
+    "sir_limit",
     "networkInfo_limit",
     "regulatoryFines_limit",
     "multimediaContent_limit",
@@ -161,15 +161,12 @@ allianz_float_columns = [
 ]
 
 allianz_cash_columns = [
-    "allianz_quota_share",
     "tbp",
     "allianz_bound_premium",
     "total_earned_premium",
     "total_unearned_premium",
-    "coalition_percent_commission",
     "allianz_commission_to_coalition",
     "allianz_net_premium",
     "total_tria",
     "allianz_tria",
 ]
-
