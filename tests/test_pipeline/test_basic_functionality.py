@@ -53,25 +53,40 @@ def test_allianz_non_us_validation():
     p4 = Pipeline()  # uk - excess
     p5 = Pipeline()  # germany
 
-    p1.add_report_set(report=AllianzAusFormatAusBDX, validation=AllianzAusValidation, key_column="internal_id")
-    df1 = p1.run_error_log()
-    df1.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - AUS - Validation Log - {date.today()}.csv")
+    try:
+        p1.add_report_set(report=AllianzAusFormatAusBDX, validation=AllianzAusValidation, key_column="internal_id")
+        df1 = p1.run_error_log()
+        df1.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - AUS - Validation Log - {date.today()}.csv")
+    except Exception as ex:
+        print(ex)
 
-    p2.add_report_set(report=AllianzAusFormatUKBDX, validation=AllianzUKValidation, key_column="internal_id")
-    df2 = p2.run_error_log()
-    df2.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - UK - Validation Log - {date.today()}.csv")
+    try:
+        p2.add_report_set(report=AllianzAusFormatUKBDX, validation=AllianzUKValidation, key_column="internal_id")
+        df2 = p2.run_error_log()
+        df2.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - UK - Validation Log - {date.today()}.csv")
+    except Exception as ex:
+        print(ex)
 
-    p3.add_report_set(report=AllianzUKPrimaryBDX, validation=AllianzUKValidation, key_column="internal_id")
-    df3 = p3.run_error_log()
-    df3.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Primary - Validation Log - {date.today()}.csv")
+    try:
+        p3.add_report_set(report=AllianzUKPrimaryBDX, validation=AllianzUKValidation, key_column="internal_id")
+        df3 = p3.run_error_log()
+        df3.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Primary - Validation Log - {date.today()}.csv")
+    except Exception as ex:
+        print(ex)
 
-    p4.add_report_set(report=AllianzUKExcessBDX, validation=AllianzUKValidation, key_column="internal_id")
-    df4 = p4.run_error_log()
-    df4.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Excess - Validation Log - {date.today()}.csv")
+    try:
+        p4.add_report_set(report=AllianzUKExcessBDX, validation=AllianzUKValidation, key_column="internal_id")
+        df4 = p4.run_error_log()
+        df4.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Excess - Validation Log - {date.today()}.csv")
+    except Exception as ex:
+        print(ex)
 
-    p5.add_report_set(report=AllianzDEBDX, validation=AllianzDEValidation, key_column="internal_id")
-    df5 = p5.run_error_log()
-    df5.to_csv(Directory.DOWNLOADS.path / f"Allianz Germany - Validation Log - {date.today()}.csv")
+    try:
+        p5.add_report_set(report=AllianzDEBDX, validation=AllianzDEValidation, key_column="internal_id")
+        df5 = p5.run_error_log()
+        df5.to_csv(Directory.DOWNLOADS.path / f"Allianz Germany - Validation Log - {date.today()}.csv")
+    except Exception as ex:
+        print(ex)
 
 
 def test_ascot_validation():

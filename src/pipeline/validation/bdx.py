@@ -138,6 +138,7 @@ _allianz_de_checks.extend(_non_us_basic_checks)
 #########################
 _allianz_uk_checks = [
     _allianz_commission_rate_matches_google_sheet,
+    _earned_unearned_field_is_zero
 ]
 _allianz_uk_checks.extend(_non_us_basic_checks)
 
