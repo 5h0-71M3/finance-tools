@@ -4,7 +4,7 @@ from typing import Callable
 import pandas as pd
 
 from src.util.data.reporting._object import Reporting
-from src.pipeline.checks.netsuite.carrier_details_section import validate_net_premium, validate_carrier_bound_premium, \
+from src.pipeline.base.checks import validate_net_premium, validate_carrier_bound_premium, \
     validate_carrier_net_premium, validate_carrier_commission_to_coalition
 
 

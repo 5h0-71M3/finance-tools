@@ -7,10 +7,10 @@ from typing import Optional
 
 import pandas as pd
 
-from src.pipeline.reports.metadata import Report
+from src.pipeline.archives.reports.metadata import Report
 from src.file_handling.directory_handler import Directory
 
-from src.pipeline.reports.metadata import (
+from src.pipeline.archives.reports.metadata import (
     NetsuiteCarrierV1Metadata,
     NetsuiteLimitMetadata,
     LookerLimitMetadata,

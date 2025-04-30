@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from src.pipeline.checks.netsuite import carrier_details_section as _dq_cd
+from src.pipeline.base.checks.netsuite import carrier_details_section as _dq_cd
 
 # BELOW ARE THE PROPS / FUNCTIONS FOR VALIDATING THE DATA
 validate_net_premium = _dq_cd.validate_net_premium

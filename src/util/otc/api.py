@@ -1,8 +1,8 @@
 """This section represents Netsuite reports not tied to a specific section on the Policy Page"""
 import pandas as pd
 
-from src.pipeline.reports.metadata.ns_reports import FieldNamingConventions
-from src.pipeline.reports.metadata import Report
+from src.pipeline.archives.reports.metadata import FieldNamingConventions
+from src.pipeline.archives.reports.metadata import Report
 from src.file_handling.directory_handler import Directory
 
 
