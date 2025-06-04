@@ -19,7 +19,8 @@ from src.pipeline.core.checks import (
     fortegra_v2_columns_are_blank,
     chaucer_commission_rate_matches_google_sheet,
     lloyds_er_coverage_premium_matches_total,
-    lloyds_er_commission_rate_matches_google_sheet
+    lloyds_er_commission_rate_matches_google_sheet,
+    lloyds_uk_canada_commission_rate_matches_google_sheet
 )
 
 
@@ -238,12 +239,14 @@ class FortegraValidation(BasicValidation):
 # Lloyds VALIDATIONS
 #############################
 class LloydsValidation(BasicValidation):
+    _lloyds_uk_canada_commission_rate_matches_google_sheet = lloyds_uk_canada_commission_rate_matches_google_sheet
+
     """Validation for Lloyds reports"""
     alias_mapping = {
         "carrier_bound_premium": "Bound Premium",
         "carrier_net_premium": "Net Premium",
         "carrier_quota_share": "Lloyds Quota Share %",
-        "carrier_commission_to_coalition": "Lloyds Commission to Coalition"
+        "carrier_commission_to_coalition": "Lloyds Commission to Coalition",
     }
 
 

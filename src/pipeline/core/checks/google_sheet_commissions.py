@@ -1,6 +1,7 @@
 import datetime
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 
 
@@ -151,6 +152,43 @@ def fortegra_commission_rate_matches_google_sheet(
                 results.append(False)
                 continue
             results.append(True)
+    return pd.Series(results)
+
+
+def lloyds_uk_canada_commission_rate_matches_google_sheet(
+        policy_effective_date: pd.Series,
+        coalition_percent_commission: pd.Series,
+) -> pd.Series:
+    """the rate is based on the Google Sheet provided by Emily
+    and the OTC team. Confirms whether the rate is correct
+    and matches the file.
+
+    https://docs.google.com/spreadsheets/d/1yHG90_XFwbneIrGhwgpDMNjelcn2BK90j36lu5BEijo/edit?gid=1587427731#gid=1587427731
+
+        Entity	Coalition Comm Rate	Brokerage Fee 	Status	Effective Date	Expiration Date
+        Lloyd's CAN	CAN	32.00%	1.00%
+        Lloyd's CAN	CAN	36.50%	1.00%		4/1/25		No profit sharing for 2025 UMR.
+        Lloyd's UK	UK	32.00%	1.00%
+        Lloyd's UK	UK	36.50%	1.00%		4/1/25		No profit sharing for 2025 UMR.
+
+    :return: pass / fail
+    """
+    # format the dates
+    policy_effective_date = pd.to_datetime(policy_effective_date)
+    after_date = datetime.datetime(2025, 4, 1)
+
+    # create the filters
+    # [2.1] for the new rate
+    mask_new_rate_applies = policy_effective_date >= after_date  # boolean pd.Series
+    mask_new_commission_rate = coalition_percent_commission == .365
+    bool_new_rate = mask_new_rate_applies & mask_new_commission_rate
+
+    # [2.2] for the old rate
+    mask_old_rate_applies = policy_effective_date < after_date
+    mask_old_commission_rate = coalition_percent_commission == .32
+    bool_old_rate = mask_old_rate_applies & mask_old_commission_rate
+
+    results = np.where(bool_new_rate | bool_old_rate, True, False)
     return pd.Series(results)
 
 

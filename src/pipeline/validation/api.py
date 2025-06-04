@@ -19,20 +19,20 @@ from src.pipeline.validation.reports import (
 
 from src.pipeline.validation.carriers import (
     # Generic Validation Classes
-    BasicValidation,
-    AustraliaValidation,
-    BasicValidationUS,
+    BasicValidation,  # used for HDI, Hartford
+    AustraliaValidation,  # used for Allianz Australia and MSIG
+    BasicValidationUS,  # used for Ascot
     # Carrier Validations
-    AllianzBasicValidation,
-    AllianzUSValidation,
-    AllianzUKValidation,
-    ChaucerValidation,
-    FortegraValidation,
-    LloydsValidation,
-    LloydsUnitedStatesValidation,
-    LloydsExecutiveRiskValidation,
-    SwissReValidation,
-    VantageValidation,
+    AllianzBasicValidation,  # used for Allianz Germany, UK, Nordics
+    AllianzUSValidation,  # used for Allianz US
+    AllianzUKValidation,  # used for Allianz UK
+    ChaucerValidation,  # used for the Chaucer validation,
+    FortegraValidation,   # For Fortegra Validation
+    LloydsValidation,  # For Lloyds Validation
+    LloydsUnitedStatesValidation,  # for Lloyds US
+    LloydsExecutiveRiskValidation,  # used for Lloyds ER
+    SwissReValidation,  # used for all SwissRe (CAD, USD, Surplus, Admitted)
+    VantageValidation,  # used for VantageValidation
 )
 
 __all__ = [
