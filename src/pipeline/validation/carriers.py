@@ -1,6 +1,6 @@
 from dirlin import BaseValidation
 
-from src.pipeline.base.checks import (
+from src.pipeline.core.checks import (
     validate_carrier_bound_premium,
     validate_carrier_net_premium,
     validate_carrier_commission_to_coalition,
@@ -146,7 +146,7 @@ class BasicValidationUS(BasicValidation):
 # Used for carriers with specific checks not applied anywhere else
 class AllianzBasicValidation(BasicValidation):
     """Should work for all International Allianz entities except for Australia, which has their
-    own set of base validations. Allianz US has its own class, but should work for
+    own set of core validations. Allianz US has its own class, but should work for
     Germany, UK, Nordics
 
     """

@@ -1,6 +1,6 @@
 from datetime import date
 
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 from src.tasks.carrier_ad_hoc import lloyds_umr_bound_against
 from src.tasks.close import Closer
 

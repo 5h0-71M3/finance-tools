@@ -16,7 +16,7 @@ from src.pipeline.validation.reports import (
     validate_swissre,
     validate_lloyds_us
 )
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 
 f = FOLDERS()
 

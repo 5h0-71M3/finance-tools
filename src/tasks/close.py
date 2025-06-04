@@ -5,9 +5,9 @@ from typing import Callable
 import pandas as pd
 from dirlin import DirlinFormatter
 
-from src.file_handling.directory_handler import FOLDERS
-from src.pipeline.base.reports.policy_list import carrier_info_tuples, Subsidiaries
-from src.pipeline.base.enums import stm_commission_percent_columns
+from src.io.directory_handler import FOLDERS
+from src.pipeline.core.reports.policy_list import carrier_info_tuples, Subsidiaries
+from src.pipeline.core.enums import stm_commission_percent_columns
 
 
 def _close_transaction_report():

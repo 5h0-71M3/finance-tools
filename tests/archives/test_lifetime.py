@@ -4,8 +4,8 @@ from decimal import Decimal
 import pandas as pd
 from dirlin import Folder
 
-from src.util.report.insured_page.objects.enums.netsuite import EnumDescription
-from src.util.report import NodeTransaction, SequencePipeline
+from archives.insured_page.objects.enums.netsuite import EnumDescription
+from archives.report import NodeTransaction, SequencePipeline
 
 
 def test_transaction_node_init():

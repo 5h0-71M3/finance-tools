@@ -3,10 +3,10 @@ from datetime import date
 
 import pandas as pd
 
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 from dirlin import DirlinFormatter
 
-from src.pipeline.base.reports.policy_list import Subsidiaries
+from src.pipeline.core.reports.policy_list import Subsidiaries
 
 
 def confirm_arch_commissions(write: bool = False):

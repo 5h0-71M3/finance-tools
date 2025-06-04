@@ -2,11 +2,11 @@ from typing import Callable
 
 import pandas as pd
 
-from src.pipeline.archives.reports.metadata import netsuite_carrierv1_field_mapping
-from src.pipeline.base.checks.netsuite.carrier_details_section import validate_net_premium
+from archives import netsuite_carrierv1_field_mapping
+from src.pipeline.core.checks.netsuite.carrier_details_section import validate_net_premium
 from dirlin.pipeline import Pipeline, Report, Check
 
-from src.file_handling.directory_handler import Directory
+from src.io.directory_handler import Directory
 
 
 class TestReportingAPILogic:

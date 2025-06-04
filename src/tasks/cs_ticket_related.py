@@ -2,7 +2,7 @@ from datetime import date
 
 import pandas as pd
 
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 
 """These may end up as validations in the future"""
 

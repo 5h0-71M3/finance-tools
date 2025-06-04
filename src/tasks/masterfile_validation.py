@@ -4,8 +4,8 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from pandas.tseries.holiday import USFederalHolidayCalendar
 
-from src.file_handling.directory_handler import FOLDERS
-from src.pipeline.base.reports.policy_list import _reported_headers, _reported_date_headers, _quota_share_headers, \
+from src.io.directory_handler import FOLDERS
+from src.pipeline.core.reports.policy_list import _reported_headers, _reported_date_headers, _quota_share_headers, \
     carrier_info_tuples
 
 

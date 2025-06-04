@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
 
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 
 
 def gather_concat_reports(

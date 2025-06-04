@@ -3,7 +3,7 @@ from typing import Literal
 import pandas as pd
 
 import src.pipeline as pipeline
-from src.file_handling.directory_handler import FOLDERS
+from src.io.directory_handler import FOLDERS
 
 from dirlin.src.base.util import DirlinFormatter as Format
 
