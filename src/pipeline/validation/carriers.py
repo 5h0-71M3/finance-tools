@@ -240,6 +240,7 @@ class FortegraValidation(BasicValidation):
 #############################
 class LloydsValidation(BasicValidation):
     _lloyds_uk_canada_commission_rate_matches_google_sheet = lloyds_uk_canada_commission_rate_matches_google_sheet
+    _earned_unearned_field_is_zero = earned_unearned_field_is_zero
 
     """Validation for Lloyds reports"""
     alias_mapping = {

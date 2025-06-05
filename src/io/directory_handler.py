@@ -1,10 +1,11 @@
 from datetime import date
-from typing import Literal
+from typing import Literal, Collection
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from dirlin import Folder, Directory, Path
 from dirlin.src.base.util import DirlinFormatter as Format
+from tqdm import tqdm
 
 from src.io._config import directory_config
 
@@ -34,8 +35,9 @@ class FOLDERS(Directory):
             "master": "Master",
             "tie_out": "Tie Out",
         }
+        """mapping used for getting the actual tab name on the Masterfile"""
 
-    def generate_arch_number_upload(self, limit: int = 8, write: bool = True) -> pd.DataFrame:
+    def download_arch_number_upload(self, limit: int = 8, write: bool = True) -> pd.DataFrame:
         """gets the Arch upload file
 
         """
@@ -48,6 +50,9 @@ class FOLDERS(Directory):
         if write:
             combined_df.to_csv(self.DOWNLOADS / f"Arch Policy Number Upload - {date.today()}.csv")
         return combined_df
+
+    def download_all_master(self):
+        ...
 
     def get_policy_list(
             self,
@@ -79,20 +84,58 @@ class FOLDERS(Directory):
 
     def get_master_log(
             self,
-            path_to_master_files: Path | None = None,
-            tab: Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"] = "soft_deletes"
-    ) -> pd.DataFrame:
-        """These are in the DESKTOP/MASTERS (NOT AC FOLDER) and what you add to on a monthly basis after Masterfiles have been reported."""
+            path_to_master_files: Folder | Path | None = None,
+            tab: list[str] | Collection | Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"] = "soft_deletes"
+    ) -> dict[str, pd.DataFrame]:
+        """function that gathers all master files from a given path. We can give this function a single tab or a list of tabs.
+
+        **NOTE**: These are in the DESKTOP/MASTERS (NOT AC FOLDER).
+
+        ...
+
+        Add this on a monthly basis after Masterfiles have been reported.
+
+        We could use the `Account Current` folder or `Desktop/Masters` in order to get all the masterfiles.
+        """
+        # logging / progress
+        pbar = tqdm(total=len(tab), desc="getting the master files", position=1)
 
         # Setting up the variables
         if path_to_master_files is None:
             path_to_master_files = self.DESKTOP / "Masters"
-        f = Folder(path_to_master_files)
-        tab = self._master_tab_mapping.get(tab)
+        elif isinstance(path_to_master_files, Path):
+            path_to_master_files = Folder(path_to_master_files)
 
+        results = {}
+
+        # we want to make sure that the list of strings is a tab in the masterfile
+        if isinstance(tab, list):
+            # Just want to notify the user if the tab name is not available
+            accepted_tab_names = ("part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master")
+            tabs_exist = any([t in accepted_tab_names for t in tab])  # we can just let the user know some of the tabs aren't in the Master
+            if tabs_exist is False:
+                print(f"Some of the tabs in {tab} is not excepted Masterfile.")
+            with pbar:  # context management with the progress bar
+                for t in tab:
+                    results[t] = self._combine_master_with_error_handle(master_folder_path=path_to_master_files, tab=t)
+                    pbar.update()
+                pbar.desc = "Done!"
+                return results
+        results[tab] = self._combine_master_with_error_handle(master_folder_path=path_to_master_files, tab=tab)
+        return results
+
+    def _combine_master_with_error_handle(
+            self,
+            master_folder_path: Folder,
+            tab: Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"]
+    ) -> pd.DataFrame:
+        """modularizing the portion of the function that's wrapped in a try / except block so we can loop this or use it a single time.
+        This function will use the `find_and_combine` function to gather the masters under the tab name
+        """
+        tab = self._master_tab_mapping.get(tab)
         # Combining all the Master Files
         try:
-            masters = f.find_and_combine(recurse=True, sheet_name=tab, use_cache=True)
+            masters = master_folder_path.find_and_combine(recurse=True, sheet_name=tab, use_cache=True)
         except Exception as e:
             raise e
         return masters

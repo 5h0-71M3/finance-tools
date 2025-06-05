@@ -1,14 +1,17 @@
 """We're starting this off as a way of seeing which Allianz reports have been sent"""
 from datetime import date
+from typing import Literal
 
 import pandas as pd
 from pathlib import Path
+
+from dirlin import Folder
 from tqdm import tqdm
 
 from src.io.directory_handler import FOLDERS
 
 
-def gather_concat_reports(
+def tie_master_to_policy_list(
         policy_list: pd.DataFrame | None = None,
         master_file_path: Path | None = None,
 ) -> pd.DataFrame:
@@ -21,21 +24,12 @@ def gather_concat_reports(
     # [Part 1]: gathering reports and variables that are needed
     f = FOLDERS()
 
-    # [1.1]: get the Masterfile components if None
+    # [1.1]: Gathering the masterfiles
     tabs = ("master", "binder_edits", "soft_deletes", "zero_dollar",)
-    tabs_to_combine = []  # for pd.concat (2) I think this Zero Dollar is overwriting all the tabs to combine
-    with tqdm(total=len(tabs), desc="handling master tabs", position=1) as pbar:
-        for tab in tabs:
-            # [1.1.1]: handling cases where user did not give Master DF for arg
-            temp = f.get_master_log(path_to_master_files=master_file_path, tab=tab)  # can ignore since we defined already
-            temp[tab] = "Yes"  # master["zero_dollar"] = True
-            tabs_to_combine.append(temp)
-            pbar.write(f"{tab} pulled and appended")
-            pbar.update()
-            # temp.to_csv(f.DOWNLOADS / f"{tab}-{date.today()}.csv")
+    master_mapping = f.get_master_log(master_file_path, tabs)  # gets all the master files
 
     # [1.2]: generate a single Masterfile sheet with tab information
-    master = pd.concat(tabs_to_combine)
+    master = pd.concat(master_mapping.values(), ignore_index=True)
     master["Internal ID"] = master["Internal ID"].fillna(0)
     master["Internal ID"] = [f"i{int(iid)}" for iid in master["Internal ID"]]
     master: pd.DataFrame = master.set_index("Internal ID")
@@ -46,6 +40,7 @@ def gather_concat_reports(
     # [Part 2]: get the policy list with transactions we expect have been sent
     if policy_list is None:
         policy_list = f.DOWNLOADS.open_recent("PolicyList")  # with the BDX template
+
     # this portion needs to be separated so that any Policy List arg will have the correct index
     policy_list["Internal ID"] = [f"i{int(iid)}" for iid in policy_list["Internal ID"]]
     policy_list: pd.DataFrame = policy_list.set_index("Internal ID")
@@ -68,6 +63,8 @@ def gather_concat_reports(
             mask_not_intersect = ~policy_list.index.isin(temp_master.index)
             policy_list.loc[mask_not_intersect, tab] = "No"
             pbar.update()
+
     # Part 3: Fix the index and final formatting
     policy_list.index = policy_list.index.str[1:]
     return policy_list
+
