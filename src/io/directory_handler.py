@@ -85,11 +85,11 @@ class FOLDERS(Directory):
     def get_master_log(
             self,
             path_to_master_files: Folder | Path | None = None,
-            tab: list[str] | Collection | Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"] = "soft_deletes"
-    ) -> dict[str, pd.DataFrame]:
+            tab: list[str] | Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"] | None = None
+    ) -> dict[str, pd.DataFrame] | pd.DataFrame:
         """function that gathers all master files from a given path. We can give this function a single tab or a list of tabs.
 
-        **NOTE**: These are in the DESKTOP/MASTERS (NOT AC FOLDER).
+        Defaults to the DESKTOP/MASTERS folder, **NOT AC FOLDER**.
 
         ...
 
@@ -106,6 +106,9 @@ class FOLDERS(Directory):
         elif isinstance(path_to_master_files, Path):
             path_to_master_files = Folder(path_to_master_files)
 
+        if tab is None:
+            tab = ["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"]
+
         results = {}
 
         # we want to make sure that the list of strings is a tab in the masterfile
@@ -121,18 +124,25 @@ class FOLDERS(Directory):
                     pbar.update()
                 pbar.desc = "Done!"
                 return results
-        results[tab] = self._combine_master_with_error_handle(master_folder_path=path_to_master_files, tab=tab)
-        return results
+        return self._combine_master_with_error_handle(master_folder_path=path_to_master_files, tab=tab)
 
     def _combine_master_with_error_handle(
             self,
-            master_folder_path: Folder,
-            tab: Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"]
+            master_folder_path: Folder | Path,
+            tab: Literal["part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master"] | str
     ) -> pd.DataFrame:
         """modularizing the portion of the function that's wrapped in a try / except block so we can loop this or use it a single time.
         This function will use the `find_and_combine` function to gather the masters under the tab name
         """
+        if isinstance(tab, str):
+            approved_str = tab in ("part_1", "part_2", "soft_deletes", "binder_edits", "zero_dollar", "master")
+            if approved_str is False:
+                raise TypeError(f"{tab} is not a valid tab name.")
+
         tab = self._master_tab_mapping.get(tab)
+        if isinstance(master_folder_path, Path):
+            master_folder_path = Folder(master_folder_path)
+
         # Combining all the Master Files
         try:
             masters = master_folder_path.find_and_combine(recurse=True, sheet_name=tab, use_cache=True)

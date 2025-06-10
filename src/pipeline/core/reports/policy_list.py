@@ -81,9 +81,9 @@ def carrier_info_tuples() -> dict[str, tuple]:
 
     (0) quota share header
     (1) carrier subsidiary name
-    (2) carrier reported header
-    (3) carrier reported date header
-    (4) report date
+    (2) carrier reported header: `Reported - Vantage`
+    (3) carrier reported date header: `Reported - Allianz UK Date`
+    (4) report date: 3, 5, 10, 15
     (5) misc header for getting the correct filter - None if empty
     (6) carrier commission %
 

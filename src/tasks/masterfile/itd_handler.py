@@ -1,11 +1,7 @@
 """We're starting this off as a way of seeing which Allianz reports have been sent"""
-from datetime import date
-from typing import Literal
-
 import pandas as pd
 from pathlib import Path
 
-from dirlin import Folder
 from tqdm import tqdm
 
 from src.io.directory_handler import FOLDERS
@@ -15,7 +11,8 @@ def tie_master_to_policy_list(
         policy_list: pd.DataFrame | None = None,
         master_file_path: Path | None = None,
 ) -> pd.DataFrame:
-    """gathers all the needed tabs from the masterfile into individual, referencable dataframes
+    """gathers all the needed tabs from the masterfile into individual, referencable dataframes.
+    I think this is used for the Ascot report.
 
     :param policy_list: Dataframe
     :param master_file_path: Path to Master
@@ -25,7 +22,7 @@ def tie_master_to_policy_list(
     f = FOLDERS()
 
     # [1.1]: Gathering the masterfiles
-    tabs = ("master", "binder_edits", "soft_deletes", "zero_dollar",)
+    tabs = ["master", "binder_edits", "soft_deletes", "zero_dollar",]
     master_mapping = f.get_master_log(master_file_path, tabs)  # gets all the master files
 
     # [1.2]: generate a single Masterfile sheet with tab information

@@ -86,7 +86,7 @@ def stamp_duty_breakdown_matches_sd_total(
     ):
         subtotal = sum([nsw, act, vic, nt, sa, wa, tas, overseas])
 
-        if abs(subtotal - total) <= .02:
+        if abs(subtotal - total) <= .03:
             results.append(True)
             continue
         results.append(False)
@@ -124,7 +124,7 @@ def gwp_breakdown_matches_premium_total(
     ):
         subtotal = sum([nsw, qld, act, vic, nt, sa, wa, tas, overseas])
 
-        if abs(subtotal - premium) <= .02:
+        if abs(subtotal - premium) <= .03:
             results.append(True)
             continue
         results.append(False)

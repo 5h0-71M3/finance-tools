@@ -1,3 +1,5 @@
+from typing import Literal
+
 import pandas as pd
 
 
@@ -107,7 +109,7 @@ class BaseTransactionLifecycle:
         return False
 
     @classmethod
-    def _trans_id_splitter_to_full_mod(cls, transaction_id: str) -> int:
+    def _trans_id_splitter_to_full_mod(cls, transaction_id: str, mod_or_sequence: Literal["mod", "sequence"] | None = None) -> int:
         """takes the transaction ID and returns the full mod (1000, 2000).
         This is used for sorting the ITD into the correct order
 
@@ -116,14 +118,25 @@ class BaseTransactionLifecycle:
         """
         split_trans_id = [component for component in str(transaction_id).split("-") if component.isdigit()]  # noticed that trans id only has two digit comps (the mod combo and date)
         try:
-            mod_code = int(split_trans_id[-1][0])
-        except IndexError:
+            mod_code = split_trans_id[-1]
+
+        except IndexError as ie:
+            print(f"Invalid transaction ID: {transaction_id}: {ie}")
             mod_code = 1  # just a default number that won't affect much
+            return mod_code
         except Exception as e:
             print(f"Transaction ID: {transaction_id}")
             print(f"Length Transaction ID: {len(split_trans_id)}")
             raise e
-        return mod_code
+        if mod_or_sequence is None:
+            return int(mod_code)
+
+        if mod_or_sequence == "mod":
+            return int(mod_code[0])
+        elif mod_or_sequence == "sequence":
+            return int(mod_code[-1])
+        else:
+            raise Exception(f"Mod or Sequence Not Supported: {mod_or_sequence}")
 
     @classmethod
     def _trans_id_split_to_policy_code(cls, transaction_id: str) -> str:

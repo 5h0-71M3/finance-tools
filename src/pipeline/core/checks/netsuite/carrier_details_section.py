@@ -40,7 +40,10 @@ def validate_carrier_bound_premium(
     :return: pass / fail
     """
     option_variance_cap: float = .02
-    expected_carrier_bound_premium = round(tbp * carrier_quota_share, 2)
+    try:
+        expected_carrier_bound_premium = round(tbp * carrier_quota_share, 2)
+    except TypeError as te:
+        raise TypeError(f"{tbp}, {carrier_quota_share}: {te}")
     if abs(expected_carrier_bound_premium - carrier_bound_premium) > option_variance_cap:
         return False
     return True

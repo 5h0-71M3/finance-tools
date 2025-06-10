@@ -3,6 +3,7 @@ from datetime import date
 from src.io.directory_handler import FOLDERS
 from src.tasks.carrier_ad_hoc import lloyds_umr_bound_against
 from src.tasks.close import Closer
+from src.tasks.masterfile.masterlog import MasterLog
 
 ######################################################################################
 # Arch Mapping
@@ -135,15 +136,15 @@ from src.tasks.close import Closer
 # (carrier, quota_share, subsidiary, excess layer) ex. Allianz UK
 
 # Soft Delete File For Aspen
-# f = FOLDERS()
-# df = f.get_master_log()
-# df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
+f = FOLDERS()
+df = f.get_master_log()
+df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
 
 ###########################
 # FOLDER CALLS AND REPORTS
 ###########################
-f = FOLDERS()
-pl = f.get_policy_list()
+# f = FOLDERS()
+# pl = f.get_policy_list()
 ##########################
 # df = f.get_master_log(tab="master")
 # print(df.head())
@@ -174,5 +175,8 @@ pl = f.get_policy_list()
 #########################
 
 # Lloyds Request
-df = lloyds_umr_bound_against()
-df.to_excel(f.DOWNLOADS / f"Request (Grouped) - Lloyds UK and Canada - 2024 UMR - 2025.04 Policy Effective Date.xlsx")
+# df = lloyds_umr_bound_against()
+# df.to_excel(f.DOWNLOADS / f"Request (Grouped) - Lloyds UK and Canada - 2024 UMR - 2025.04 Policy Effective Date.xlsx")
+
+# ml = MasterLog()
+# ml.download_reported_itd()

@@ -1,9 +1,57 @@
+from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Any
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from src.pipeline.core.policy_stack.base import BaseTransactionLifecycle
+
+
+@dataclass
+class SortingAlgoInfo:
+    """if no arguments are given will default to the standard aspen algorithm
+
+    Properties:
+        - field_order: ["--Coalition Policy Number--", "Policy Index", "Module", "Mod Index", "Soft Delete Index", "Endorsement Number", "Binder Edit Index"]
+        - ascending: [True for _ in field_order]
+
+    """
+    field_order: str | list[str] | None = None
+    """the order in which we want to sort the data
+    
+    ie: ["--Coalition Policy Number--", "Policy Index", "Module", "Mod Index", "Soft Delete Index", "Endorsement Number", "Binder Edit Index"]
+    """
+
+    ascending: bool | list[bool] | None = None
+    """whether we want each field to be in ascending or descending order
+    
+    ie [all_ascending_order = [True for _ in field_order]] 
+    """
+
+    def __post_init__(self):
+        if self.field_order is None:
+            # this is the standard for Aspen right now
+            self.field_order = ["--Coalition Policy Number--", "Policy Index", "Module", "Soft Delete Index", "Mod Index", "Sequence Index", "Endorsement Number", "Binder Edit Index", "Internal ID"]
+            # self.field_order = ["--Coalition Policy Number--", "Policy Index", "Internal ID"]
+
+        if self.ascending is None:
+            self.ascending = [True for _ in self.field_order]
+
+    def as_args(self) -> dict[str, Any]:
+        """will return a dictionary with the param: arg key-value pair
+        for processing as a groupby dataframe
+
+        Args:
+            - by
+            - ascending
+            - na_position
+        """
+        param_map = dict()
+        param_map["by"] = self.field_order
+        param_map["ascending"] = self.ascending
+        param_map["na_position"] = "first"
+        return param_map
 
 
 class TransactionLifecycle(BaseTransactionLifecycle):
@@ -21,37 +69,64 @@ class TransactionLifecycle(BaseTransactionLifecycle):
         #  The core ordered ITD - off this, we can remove or keep for diff reports
         self.ordered_itd: pd.DataFrame = self._order_itd(stm_transaction_itd)
 
-    def _order_itd(self, stm_transaction_itd: pd.DataFrame) -> pd.DataFrame:
+    def _order_itd(
+            self,
+            stm_transaction_itd: pd.DataFrame,
+            order_only: bool = False,
+            sorting_algo: SortingAlgoInfo | None = None,
+    ) -> pd.DataFrame:
         """Function responsible for handling the ordering of the ITD report
 
         :param stm_transaction_itd: a raw, unformatted STM ITD report
         """
+        # 2025.03.25 - wanted to make this a little cleaner
+        # 2025.04.09 - new issue module vs mod index
+        # 2025.05.13 - ran into issues where a 2000 was ahead of 1000 E32. Changed Module and Mod Index in front of Endorsement, accounting for previous changes
+        # 2025.05.13 - ran into issues where ND was 2nd, and removing values from the other endorsements. Switched Binder Edit Index and Endorsement Number
+        # 2025.05.13 - moving it back since it was ordering wrong - but going to experiment with soft delete index (placing it where BEI was previously)
+        if sorting_algo is None:
+            sorting_algo = SortingAlgoInfo()
+
+        if order_only is True:
+            stm_transaction_itd: pd.DataFrame = stm_transaction_itd.sort_values(
+                **sorting_algo.as_args()
+            )
+            return stm_transaction_itd
+
         required_columns = self.all_columns.copy()
         working_dataset = stm_transaction_itd[required_columns].copy()
 
         # ====Part 1: Get the Balance for each transaction====
         # Working on getting a correctly sorted dataset so we can prep for cumsum
         working_dataset["Endorsement Number"] = working_dataset["Endorsement Number"].fillna(0)
+
+        # 2025.05.13 adding this section since the file is not being ordered correctly
+        mask_mod_not_zero = working_dataset["Module"] != 0
+        mask_mod_not_na = ~working_dataset["Module"].isna()
+        # working_dataset["Module"] = working_dataset["Module"].where(mask_mod_not_zero & mask_mod_not_na, working_dataset["Carrier Policy Number Module"])
         working_dataset["Module"] = working_dataset["Module"].fillna(0)
 
         # 2025.03.21 - adding ordering for Binder edits
         working_dataset["Binder Edit Index"] = [self._trans_id_splitter_to_index(trans_id) for trans_id in working_dataset["-------------Transaction ID-------------"]]
 
+        # 2025.05.13 - adding a Soft Delete index for ordering soft deletes before Binder Edits
+        working_dataset["Soft Delete Index"] = [1 if bei == 1 else 0 for bei in working_dataset["Binder Edit Index"]]
+
         # 2025.03.24 - adding ordering for 2000 and other full mods since it wasn't recognized previously
-        working_dataset["Mod Index"] = [self._trans_id_splitter_to_full_mod(trans_id) for trans_id in working_dataset["-------------Transaction ID-------------"]]
+        working_dataset["Mod Index"] = [self._trans_id_splitter_to_full_mod(trans_id, "mod") for trans_id in working_dataset["-------------Transaction ID-------------"]]
 
         # 2025.03.24 - adding ordering for policy since Transaction ID messes things up
         working_dataset["Policy Index"] = [self._trans_id_split_to_policy_code(trans_id) for trans_id in working_dataset["-------------Transaction ID-------------"]]
 
-        # 2025.03.25 - wanted to make this a little cleaner
-        field_order = ["--Coalition Policy Number--", "Policy Index", "Endorsement Number", "Module", "Mod Index", "Binder Edit Index"]  # 2025.04.09 - new issue module vs mod index
-        all_ascending_order = [True for _ in field_order]
+        # 2025.06.09 - we seemed to have been missing the last two numbers of the 4 digit code
+        #  this may have caused a lot of the issues we are seeing `10[01]-N`
+        working_dataset["Sequence Index"] = [self._trans_id_splitter_to_full_mod(trans_id, "sequence") for trans_id in working_dataset["-------------Transaction ID-------------"]]
 
         working_dataset: pd.DataFrame = working_dataset.sort_values(
-            by=field_order,
-            ascending=all_ascending_order,
-            na_position="first",
+            **sorting_algo.as_args()
         )
+        # ***at this point, we are assuming that the working dataset is in correct order***
+        # working_dataset[working_dataset["-------------Transaction ID-------------"].duplicated()].to_csv(f"/Users/shomendoza/Downloads/duplicated_tid{datetime.today()} - v1.0.csv")
         return working_dataset
 
     def as_aspen_itd(

@@ -64,6 +64,15 @@ def export_masterfile_reported(
     f = FOLDERS()
     _end_of_previous_month = date.today() + relativedelta(months=-1, day=31)
     carrier_info_mapping = carrier_info_tuples()
+    """
+    (0) quota share header
+    (1) carrier subsidiary name
+    (2) carrier reported header
+    (3) carrier reported date header
+    (4) report date
+    (5) misc header for getting the correct filter - None if empty
+    (6) carrier commission %
+    """
 
     # [Part 0]: set up the variables
     if curr_master is None:
