@@ -82,8 +82,10 @@ class MasterLogUtility:
 
 
 class MasterLog:
-    """Handles files and reports related to the use of the Master File
-
+    """Handles files and reports related to the use of the Master File.
+    
+    For example, to get a list of all Master Logs ever reported or if
+    we are running a recon on what we had reported previously to carriers.
     """
     f = FOLDERS()
     utl = MasterLogUtility()
