@@ -1,9 +1,13 @@
 from datetime import date
 
-from src.io.directory_handler import FOLDERS
-from src.tasks.carrier_ad_hoc import lloyds_umr_bound_against
-from src.tasks.close import Closer
-from src.tasks.masterfile.masterlog import MasterLog
+import pandas as pd
+from dirlin import Folder
+
+from foo.io.directory_handler import FOLDERS
+from foo.tasks.carrier_ad_hoc import lloyds_umr_bound_against
+from foo.tasks.close import Closer
+from foo.tasks.cs_ticket_related import multiple_polices_under_policyholder
+from foo.tasks.masterfile.masterlog import MasterLog
 
 ######################################################################################
 # Arch Mapping
@@ -137,8 +141,8 @@ from src.tasks.masterfile.masterlog import MasterLog
 
 # Soft Delete File For Aspen
 f = FOLDERS()
-df = f.get_master_log()
-df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
+# df = f.get_master_log()
+# df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
 
 ###########################
 # FOLDER CALLS AND REPORTS
@@ -159,7 +163,7 @@ df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx"
 # df.to_csv(f.DOWNLOADS / f"policy_list - expected vs on master {date.today()}.csv")
 
 # find_erp_with_inactive_policy()
-#f.generate_arch_number_upload()
+# f.download_arch_number_upload()
 # confirm_arch_commissions(write=True)
 
 # match_arch_policy_number()
@@ -176,7 +180,29 @@ df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx"
 
 # Lloyds Request
 # df = lloyds_umr_bound_against()
-# df.to_excel(f.DOWNLOADS / f"Request (Grouped) - Lloyds UK and Canada - 2024 UMR - 2025.04 Policy Effective Date.xlsx")
+# df.to_excel(f.DOWNLOADS / f"Request (Grouped) - Lloyds UK and Canada - 2024 UMR - 2025.04 Policy Effective Date-{date.today()}.xlsx")
 
 # ml = MasterLog()
 # ml.download_reported_itd()
+
+# multiple_polices_under_policyholder
+
+lloyds_folder_uk = Folder(f.DESKTOP / f"Lloyds" / "UK")
+lloyds_folder_can = Folder(f.DESKTOP / "Lloyds" / f"Canada")
+
+uk_itd = lloyds_folder_uk.find_and_combine(recurse=True)
+can_itd = lloyds_folder_can.find_and_combine(recurse=True)
+
+with pd.ExcelWriter(str(f.DESKTOP / f"Lloyds" / f"Lloyds ITD for File Match - {date.today()} - v2.xlsx")) as writer:
+    uk_itd.to_excel(writer, index=False, sheet_name="UK")
+    can_itd.to_excel(writer, index=False, sheet_name="Canada")
+
+
+# aspen_folder_pre = Folder(f.DESKTOP / f"Aspen" / "pre")
+# aspen_folder_post = Folder(f.DESKTOP / f"Aspen" / "post")
+#
+# aspen_itd_pre = aspen_folder_pre.find_and_combine()
+# aspen_itd_post = aspen_folder_post.find_and_combine()
+#
+# aspen_itd_pre.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs Before Limit Balance - {date.today()}.csv")
+# aspen_itd_post.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs After Limit Balance - {date.today()}.csv")

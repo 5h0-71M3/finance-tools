@@ -2,7 +2,7 @@ from datetime import date
 
 from dirlin.pipeline import Pipeline
 
-from src.io.directory_handler import Directory
+from foo.io.directory_handler import Directory
 from archives import V1Report
 from archives import ArchBDX, AllianzUsBDX, VantageBDX, LloydsUK2023BDX, LloydsUK2024BDX, \
     LloydsCanada2023BDX, LloydsCanada2024BDX, AscotBDX, AllianzAusFormatUKBDX, AllianzAusFormatAusBDX, \

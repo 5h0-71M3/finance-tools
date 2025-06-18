@@ -1,2 +1,10 @@
+[project]
+name = "finance-tools"
+dynamic = ["version"]
+
+dependencies = [
+    "typer"
+]
+
 [project.scripts]
-finance-tools = "src.cli:app"
+finance-tools = "foo.cli:app"

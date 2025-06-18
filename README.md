@@ -5,3 +5,21 @@ with other data sources.
 
 # The CLI
 Accessing the CLI is pretty easy. Go to the terminal and run the script.
+```text
+finance-tools [command] [args]
+```
+
+## Available functions
+
+| Command                            | Category           | Function                                          |
+|------------------------------------|--------------------|---------------------------------------------------|
+| `validate-bdx`                     | `BDX Support`      | Runs the validation log for BDX files             |
+| `generate-hartford-itd`            | `BDX Support`      | Runs the ITD file required for Hartford           |
+| `generate-aspen-soft-delete-sheet` | `BDX Support`      | Runs the Soft Delete sheet required for Vantage   |
+| `daily-checks`                     | `Netsuite Uploads` | Runs the Daily Checks for Netsuite                |
+| `generate-reported`                | `Netsuite Uploads` | Runs the reported upload file for EOM BDX         |
+| `generate-arch-upload`             | `Netsuite Uploads` | Uploads the Arch files for Claims reporting       |
+| `sre-policy-docs`                  | `Ad-Hoc`           | Runs the SRE Policy Doc Naming                    |
+| `get-itd`                          | `Ad-Hoc`           | Runs the find and combine for the Desktop folders |
+
+

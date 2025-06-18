@@ -3,10 +3,10 @@ from typing import Callable
 import pandas as pd
 
 from archives import netsuite_carrierv1_field_mapping
-from src.pipeline.core.checks.netsuite.carrier_details_section import validate_net_premium
+from foo.pipeline.core.checks.netsuite.carrier_details_section import validate_net_premium
 from dirlin.pipeline import Pipeline, Report, Check
 
-from src.io.directory_handler import Directory
+from foo.io.directory_handler import Directory
 
 
 class TestReportingAPILogic:
