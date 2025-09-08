@@ -2,13 +2,13 @@ from datetime import date
 
 from dirlin.pipeline import Pipeline
 
-from src.file_handling.directory_handler import Directory
-from src.pipeline.reports import V1Report
-from src.pipeline.reports.bdx import ArchBDX, AllianzUsBDX, VantageBDX, LloydsUK2023BDX, LloydsUK2024BDX, \
+from foo.io.directory_handler import Directory
+from archives import V1Report
+from archives import ArchBDX, AllianzUsBDX, VantageBDX, LloydsUK2023BDX, LloydsUK2024BDX, \
     LloydsCanada2023BDX, LloydsCanada2024BDX, AscotBDX, AllianzAusFormatUKBDX, AllianzAusFormatAusBDX, \
     AllianzUKPrimaryBDX, AllianzUKExcessBDX, AllianzDEBDX
-from src.pipeline.validation import CarrierDetailsValidation
-from src.pipeline.validation.bdx import BasicBDXValidation, AllianzUsBDXValidation, LimitValidation, \
+from archives.validation import CarrierDetailsValidation
+from archives.validation import BasicBDXValidation, AllianzUsBDXValidation, LimitValidation, \
     VantageBDXValidation, LloydsUK2023BDXValidation, LloydsUK2024BDXValidation, LloydsCanada2024BDXValidation, \
     AscotBDXValidation, AllianzAusValidation, AllianzUKValidation, AllianzDEValidation
 

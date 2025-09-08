@@ -1,10 +1,13 @@
-import math
 from datetime import date
 
 import pandas as pd
 from dirlin import Folder
 
-from src.file_handling.directory_handler import Directory
+from foo.io.directory_handler import FOLDERS
+from foo.tasks.carrier_ad_hoc import lloyds_umr_bound_against
+from foo.tasks.close import Closer
+from foo.tasks.cs_ticket_related import multiple_polices_under_policyholder
+from foo.tasks.masterfile.masterlog import MasterLog
 
 ######################################################################################
 # Arch Mapping
@@ -129,16 +132,77 @@ from src.file_handling.directory_handler import Directory
 #     df = carrier[0].merge(limit_file, on="Internal ID", how="left")
 #     df.to_csv(Directory.DOWNLOADS.path / f"{carrier[1]} - Surplus 3_0 - Sample - {date.today()}.csv", index=False)
 
-
-#######################################################################################
-# Calculating Master File Balance
-#######################################################################################
-masterfile_master_tab_path = Directory.ACCOUNT_CURRENT.path / "2025-03"
-masterfile_master_tab = Folder(masterfile_master_tab_path).open(f"MasterFile-Cyber-3.2025-2025-04-01.xlsx", sheet_name="Master")
+######################################################################################
 
 # (carrier, quota_share) ex. Ascot
 # (carrier, quota_share, subsidiary) ex. Allianz US
 # carrier, quota_share, subsidiary, UMR) ex. Lloyds UK
 # (carrier, quota_share, subsidiary, excess layer) ex. Allianz UK
 
-calculation_storage = {}
+# Soft Delete File For Aspen
+f = FOLDERS()
+# df = f.get_master_log()
+# df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
+
+###########################
+# FOLDER CALLS AND REPORTS
+###########################
+# f = FOLDERS()
+# pl = f.get_policy_list()
+##########################
+# df = f.get_master_log(tab="master")
+# print(df.head())
+# df.to_csv(f.DOWNLOADS / f"ITD Master Log - Reported - {date.today()}.csv")
+
+# df = export_masterfile_reported()
+# df.to_csv(f.DOWNLOADS / f"Reported Masterfile - {date.today()}.csv")
+# print(df)
+
+# pl = f.DOWNLOADS.open_recent("PolicyList")
+# df = gather_concat_reports(policy_list=pl)
+# df.to_csv(f.DOWNLOADS / f"policy_list - expected vs on master {date.today()}.csv")
+
+# find_erp_with_inactive_policy()
+# f.download_arch_number_upload()
+# confirm_arch_commissions(write=True)
+
+# match_arch_policy_number()
+
+
+#######################
+# CLOSE
+#######################
+# c = Closer()
+#
+# df = c.close_month(pl)
+# df.to_csv(f.DOWNLOADS / f"Close Report_{date.today()}.csv")
+#########################
+
+# Lloyds Request
+# df = lloyds_umr_bound_against()
+# df.to_excel(f.DOWNLOADS / f"Request (Grouped) - Lloyds UK and Canada - 2024 UMR - 2025.04 Policy Effective Date-{date.today()}.xlsx")
+
+# ml = MasterLog()
+# ml.download_reported_itd()
+
+# multiple_polices_under_policyholder
+
+lloyds_folder_uk = Folder(f.DESKTOP / f"Lloyds" / "UK")
+lloyds_folder_can = Folder(f.DESKTOP / "Lloyds" / f"Canada")
+
+uk_itd = lloyds_folder_uk.find_and_combine(recurse=True)
+can_itd = lloyds_folder_can.find_and_combine(recurse=True)
+
+with pd.ExcelWriter(str(f.DESKTOP / f"Lloyds" / f"Lloyds ITD for File Match - {date.today()} - v2.xlsx")) as writer:
+    uk_itd.to_excel(writer, index=False, sheet_name="UK")
+    can_itd.to_excel(writer, index=False, sheet_name="Canada")
+
+
+# aspen_folder_pre = Folder(f.DESKTOP / f"Aspen" / "pre")
+# aspen_folder_post = Folder(f.DESKTOP / f"Aspen" / "post")
+#
+# aspen_itd_pre = aspen_folder_pre.find_and_combine()
+# aspen_itd_post = aspen_folder_post.find_and_combine()
+#
+# aspen_itd_pre.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs Before Limit Balance - {date.today()}.csv")
+# aspen_itd_post.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs After Limit Balance - {date.today()}.csv")
