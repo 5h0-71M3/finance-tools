@@ -1,7 +1,7 @@
 from datetime import date
 
-from src.bar.core.checks.zipcodes import expected_state, zip_code_variances
-from src.io import FOLDERS
+from finance_tools.bar.core.checks.zipcodes import zip_code_variances
+from finance_tools.io import FOLDERS
 
 f = FOLDERS()
 

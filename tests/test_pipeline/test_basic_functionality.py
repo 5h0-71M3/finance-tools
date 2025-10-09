@@ -2,7 +2,7 @@ from datetime import date
 
 from dirlin.dq.core import ResultWrapper
 
-from pipeline_v2.validation import BasicValidation, f, SmallCarrierPipeline, AustraliaPipeline, FortegraPipeline
+from finance_tools.pipeline_v2 import BasicValidation, f, SmallCarrierPipeline, AustraliaPipeline, FortegraPipeline
 
 
 def test_bigger_pipeline():

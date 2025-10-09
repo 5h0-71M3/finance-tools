@@ -1,4 +1,4 @@
-from src.bar.core.checks.netsuite.surcharge_section import validate_surcharge, validate_pliga_fee, \
+from finance_tools.bar import validate_surcharge, validate_pliga_fee, \
     validate_kentucky_surcharges
 
 

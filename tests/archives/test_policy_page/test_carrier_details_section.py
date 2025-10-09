@@ -1,4 +1,4 @@
-from src.bar.core.checks.netsuite.carrier_details_section import validate_net_premium, \
+from finance_tools.bar.core.checks.netsuite.carrier_details_section import validate_net_premium, \
     validate_carrier_bound_premium, validate_carrier_net_premium, validate_carrier_commission_to_coalition
 
 

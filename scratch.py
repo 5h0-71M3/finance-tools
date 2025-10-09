@@ -3,11 +3,8 @@ from datetime import date
 import pandas as pd
 from dirlin import Folder
 
-from src.io.directory_handler import FOLDERS
-from src.tasks.carrier_ad_hoc import lloyds_umr_bound_against
-from src.tasks.close import Closer
-from src.tasks.cs_ticket_related import multiple_polices_under_policyholder
-from src.tasks.masterfile.masterlog import MasterLog
+from finance_tools.bar.validation_object import DailyValidation
+from finance_tools.io import FOLDERS
 
 ######################################################################################
 # Arch Mapping
@@ -206,3 +203,11 @@ f = FOLDERS()
 #
 # aspen_itd_pre.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs Before Limit Balance - {date.today()}.csv")
 # aspen_itd_post.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs After Limit Balance - {date.today()}.csv")
+
+
+df = f.get_policy_list()
+dv = DailyValidation()
+
+log = dv.run_error_log(df)
+log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()}.csv")
+
