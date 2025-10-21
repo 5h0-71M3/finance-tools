@@ -1,8 +1,8 @@
 import datetime
 
-from foo.io.directory_handler import FOLDERS
-from foo.pipeline import TransactionLifecycle
-from foo.pipeline.core.policy_stack.creation import SortingAlgoInfo
+from finance_tools.io import FOLDERS
+from finance_tools.bar import TransactionLifecycle
+from finance_tools.bar.core.policy_stack.creation import SortingAlgoInfo
 
 f = FOLDERS()
 

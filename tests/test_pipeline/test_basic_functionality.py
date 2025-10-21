@@ -1,132 +1,26 @@
 from datetime import date
 
-from dirlin.pipeline import Pipeline
+from dirlin.dq.core import ResultWrapper
 
-from foo.io.directory_handler import Directory
-from archives import V1Report
-from archives import ArchBDX, AllianzUsBDX, VantageBDX, LloydsUK2023BDX, LloydsUK2024BDX, \
-    LloydsCanada2023BDX, LloydsCanada2024BDX, AscotBDX, AllianzAusFormatUKBDX, AllianzAusFormatAusBDX, \
-    AllianzUKPrimaryBDX, AllianzUKExcessBDX, AllianzDEBDX
-from archives.validation import CarrierDetailsValidation
-from archives.validation import BasicBDXValidation, AllianzUsBDXValidation, LimitValidation, \
-    VantageBDXValidation, LloydsUK2023BDXValidation, LloydsUK2024BDXValidation, LloydsCanada2024BDXValidation, \
-    AscotBDXValidation, AllianzAusValidation, AllianzUKValidation, AllianzDEValidation
+from finance_tools.pipeline_v2 import BasicValidation, f, SmallCarrierPipeline, AustraliaPipeline, FortegraPipeline
 
 
-class TestBasicPipeline:
-    def test_setup(self):
-        p = Pipeline(Directory.DOWNLOADS, report=V1Report)
-        p.get_worksheet()
-
-        results = p.run_validation(CarrierDetailsValidation,)
-        print(results)
+def test_bigger_pipeline():
+    pipe = BasicValidation()
+    result: ResultWrapper = pipe.run()
+    df = result.as_dataframe("summary")
+    df.to_csv(f.DOWNLOADS / f"Validation Summary - {date.today()}.csv")
 
 
-class TestArchITDPipeline:
-    def test_setup(self):
-        p = Pipeline(Directory.DOWNLOADS, report=ArchBDX)
-        df = p.get_worksheet()
-        BasicBDXValidation.run(df, key_column="internal_id", infer_shared=True)
-        result = BasicBDXValidation.generate_error_log()
-        result.to_csv(Directory.DOWNLOADS.path / f"test_report - {date.today()}.csv")
-# 10703
+def test_split_pipeline():
+    small_pipeline = SmallCarrierPipeline()
+    australia_pipeline = AustraliaPipeline()
+    fortegra_pipeline = FortegraPipeline()
 
+    small_df = small_pipeline.run()
+    australia_df = australia_pipeline.run()
+    fortegra_df = fortegra_pipeline.run()
 
-def test_allianz_us_validation():
-    p = Pipeline()
-    p.add_report_set(report=AllianzUsBDX, validation=AllianzUsBDXValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"Allianz Validation Log - {date.today()}.csv")
-
-
-def test_allianz_uk_validation():
-    p = Pipeline()
-    p.add_report_set(report=AllianzUKPrimaryBDX, validation=AllianzUKValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Primary - Validation Log - {date.today()}.csv")
-
-
-def test_allianz_non_us_validation():
-    p1 = Pipeline()  # aus - aus
-    p2 = Pipeline()  # aus - uk
-    p3 = Pipeline()  # uk - primary
-    p4 = Pipeline()  # uk - excess
-    p5 = Pipeline()  # germany
-
-    try:
-        p1.add_report_set(report=AllianzAusFormatAusBDX, validation=AllianzAusValidation, key_column="internal_id")
-        df1 = p1.run_error_log()
-        df1.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - AUS - Validation Log - {date.today()}.csv")
-    except Exception as ex:
-        print(ex)
-
-    try:
-        p2.add_report_set(report=AllianzAusFormatUKBDX, validation=AllianzUKValidation, key_column="internal_id")
-        df2 = p2.run_error_log()
-        df2.to_csv(Directory.DOWNLOADS.path / f"Allianz AUS - UK - Validation Log - {date.today()}.csv")
-    except Exception as ex:
-        print(ex)
-
-    try:
-        p3.add_report_set(report=AllianzUKPrimaryBDX, validation=AllianzUKValidation, key_column="internal_id")
-        df3 = p3.run_error_log()
-        df3.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Primary - Validation Log - {date.today()}.csv")
-    except Exception as ex:
-        print(ex)
-
-    try:
-        p4.add_report_set(report=AllianzUKExcessBDX, validation=AllianzUKValidation, key_column="internal_id")
-        df4 = p4.run_error_log()
-        df4.to_csv(Directory.DOWNLOADS.path / f"Allianz UK - Excess - Validation Log - {date.today()}.csv")
-    except Exception as ex:
-        print(ex)
-
-    try:
-        p5.add_report_set(report=AllianzDEBDX, validation=AllianzDEValidation, key_column="internal_id")
-        df5 = p5.run_error_log()
-        df5.to_csv(Directory.DOWNLOADS.path / f"Allianz Germany - Validation Log - {date.today()}.csv")
-    except Exception as ex:
-        print(ex)
-
-
-def test_ascot_validation():
-    p = Pipeline()
-    p.add_report_set(report=AscotBDX, validation=AscotBDXValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"Ascot Validation Log - {date.today()}.csv")
-
-
-def test_vantage_validation():
-    p = Pipeline()
-    p.add_report_set(report=VantageBDX, validation=VantageBDXValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"Vantage Validation Log - {date.today()}.csv")
-
-
-def test_lloyds_non_us_validation():
-    p = Pipeline()
-    p.add_report_set(report=LloydsUK2023BDX, validation=LloydsUK2023BDXValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"LloydsUK2023 Validation Log - {date.today()}.csv")
-
-    p2 = Pipeline()
-    p2.add_report_set(report=LloydsUK2024BDX, validation=LloydsUK2024BDXValidation, key_column="internal_id")
-    df2 = p2.run_error_log()
-    df2.to_csv(Directory.DOWNLOADS.path / f"LloydsUK2024 Validation Log - {date.today()}.csv")
-
-    p3 = Pipeline()
-    p3.add_report_set(report=LloydsCanada2023BDX, validation=LloydsUK2023BDXValidation, key_column="internal_id")
-    df3 = p3.run_error_log()
-    df3.to_csv(Directory.DOWNLOADS.path / f"LloydsCanada2023 Validation Log - {date.today()}.csv")
-
-    p4 = Pipeline()
-    p4.add_report_set(report=LloydsCanada2024BDX, validation=LloydsCanada2024BDXValidation, key_column="internal_id")
-    df4 = p4.run_error_log()
-    df4.to_csv(Directory.DOWNLOADS.path / f"LloydsCanada2024 Validation Log - {date.today()}.csv")
-
-
-def test_limit_validation():
-    p = Pipeline()
-    p.add_report_set(report=AllianzUsBDX, validation=LimitValidation, key_column="internal_id")
-    df = p.run_error_log()
-    df.to_csv(Directory.DOWNLOADS.path / f"Sample Validation Log - {date.today()}.csv")
+    small_df.as_dataframe("summary").to_csv(f.DOWNLOADS / f"Validation Summary - small - {date.today()}.csv")
+    australia_df.as_dataframe("summary").to_csv(f.DOWNLOADS / f"Validation Summary - AUS - {date.today()}.csv")
+    fortegra_df.as_dataframe("summary").to_csv(f.DOWNLOADS / f"Validation Summary - Fortegra - {date.today()}.csv")

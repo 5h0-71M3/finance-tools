@@ -3,11 +3,8 @@ from datetime import date
 import pandas as pd
 from dirlin import Folder
 
-from foo.io.directory_handler import FOLDERS
-from foo.tasks.carrier_ad_hoc import lloyds_umr_bound_against
-from foo.tasks.close import Closer
-from foo.tasks.cs_ticket_related import multiple_polices_under_policyholder
-from foo.tasks.masterfile.masterlog import MasterLog
+from finance_tools.bar.validation_object import DailyValidation
+from finance_tools.io import FOLDERS
 
 ######################################################################################
 # Arch Mapping
@@ -186,16 +183,16 @@ f = FOLDERS()
 # ml.download_reported_itd()
 
 # multiple_polices_under_policyholder
-
-lloyds_folder_uk = Folder(f.DESKTOP / f"Lloyds" / "UK")
-lloyds_folder_can = Folder(f.DESKTOP / "Lloyds" / f"Canada")
-
-uk_itd = lloyds_folder_uk.find_and_combine(recurse=True)
-can_itd = lloyds_folder_can.find_and_combine(recurse=True)
-
-with pd.ExcelWriter(str(f.DESKTOP / f"Lloyds" / f"Lloyds ITD for File Match - {date.today()} - v2.xlsx")) as writer:
-    uk_itd.to_excel(writer, index=False, sheet_name="UK")
-    can_itd.to_excel(writer, index=False, sheet_name="Canada")
+#
+# lloyds_folder_uk = Folder(f.DESKTOP / f"Lloyds" / "UK")
+# lloyds_folder_can = Folder(f.DESKTOP / "Lloyds" / f"Canada")
+#
+# uk_itd = lloyds_folder_uk.find_and_combine(recurse=True)
+# can_itd = lloyds_folder_can.find_and_combine(recurse=True)
+#
+# with pd.ExcelWriter(str(f.DESKTOP / f"Lloyds" / f"Lloyds ITD for File Match - {date.today()} - v2.xlsx")) as writer:
+#     uk_itd.to_excel(writer, index=False, sheet_name="UK")
+#     can_itd.to_excel(writer, index=False, sheet_name="Canada")
 
 
 # aspen_folder_pre = Folder(f.DESKTOP / f"Aspen" / "pre")
@@ -206,3 +203,11 @@ with pd.ExcelWriter(str(f.DESKTOP / f"Lloyds" / f"Lloyds ITD for File Match - {d
 #
 # aspen_itd_pre.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs Before Limit Balance - {date.today()}.csv")
 # aspen_itd_post.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs After Limit Balance - {date.today()}.csv")
+
+
+df = f.get_policy_list()
+dv = DailyValidation()
+
+log = dv.run_error_log(df)
+log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()}.csv")
+
