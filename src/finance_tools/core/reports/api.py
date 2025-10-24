@@ -1,4 +1,4 @@
-from finance_tools.bar.core.reports.policy_list import (
+from finance_tools.core.reports.policy_list import (
     carrier_info_tuples,
     Subsidiaries
 )

@@ -97,7 +97,7 @@ class MasterLog:
             output_path: Path | str | None = None
     ) -> Path:
         """handles and converts the output parameter to the correct type.
-        Can add data validation, etc.
+        Can add data validations, etc.
 
         :param output_path: path to the folder where you would like to write the file to
         :return: a clean path

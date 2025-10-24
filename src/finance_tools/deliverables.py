@@ -4,10 +4,14 @@ from typing import Literal
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from finance_tools.bar.core.reports.policy_list import _quota_share_headers, _reported_headers, _reported_date_headers, \
+from finance_tools.core.reports.policy_list import (
+    _quota_share_headers,
+    _reported_headers,
+    _reported_date_headers,
     carrier_info_tuples
+)
 
-from finance_tools.bar.validation.api import (
+from finance_tools.pipeline_v2.validations.api import (
     validate_ascot,
     validate_allianz,
     validate_lloyds,

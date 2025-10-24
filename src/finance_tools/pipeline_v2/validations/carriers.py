@@ -1,6 +1,6 @@
 from dirlin.validation import BaseValidation
 
-from finance_tools.bar.core.checks import (
+from finance_tools.core.checks import (
     validate_carrier_bound_premium,
     validate_carrier_net_premium,
     validate_carrier_commission_to_coalition,

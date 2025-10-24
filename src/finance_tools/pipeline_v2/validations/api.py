@@ -1,5 +1,5 @@
 # performs the validations
-from finance_tools.bar.validation.reports import (
+from finance_tools.pipeline_v2.validations.reports import (
     validate_allianz,
     validate_ascot,
     validate_chaucer,
@@ -17,7 +17,7 @@ from finance_tools.bar.validation.reports import (
 
 # todo add Aspen Validations
 
-from finance_tools.bar.validation.carriers import (
+from finance_tools.pipeline_v2.validations.carriers import (
     # Generic Validation Classes
     BasicValidation,  # used for HDI, Hartford
     AustraliaValidation,  # used for Allianz Australia and MSIG
@@ -26,7 +26,7 @@ from finance_tools.bar.validation.carriers import (
     AllianzBasicValidation,  # used for Allianz Germany, UK, Nordics
     AllianzUSValidation,  # used for Allianz US
     AllianzUKValidation,  # used for Allianz UK
-    ChaucerValidation,  # used for the Chaucer validation,
+    ChaucerValidation,  # used for the Chaucer validations,
     FortegraValidation,   # For Fortegra Validation
     LloydsValidation,  # For Lloyds Validation
     LloydsUnitedStatesValidation,  # for Lloyds US
@@ -36,7 +36,7 @@ from finance_tools.bar.validation.carriers import (
 )
 
 # Daily Checks
-# from src.pipeline_v2.validation import DailyValidation
+# from src.pipeline_v2.validations import DailyValidation
 
 __all__ = [
     "validate_allianz",

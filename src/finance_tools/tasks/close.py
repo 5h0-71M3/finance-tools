@@ -5,8 +5,8 @@ import pandas as pd
 from dirlin import DirlinFormatter
 
 from finance_tools.io.directory_handler import FOLDERS
-from finance_tools.bar.core.reports.policy_list import carrier_info_tuples, Subsidiaries
-from finance_tools.bar.core.enums import stm_commission_percent_columns
+from finance_tools.core.reports import carrier_info_tuples, Subsidiaries
+from finance_tools.core.enums import stm_commission_percent_columns
 
 
 def _close_transaction_report():

@@ -6,7 +6,7 @@ import pandas as pd
 from finance_tools.io.directory_handler import FOLDERS
 from dirlin import DirlinFormatter
 
-from finance_tools.bar.core.reports.policy_list import Subsidiaries
+from finance_tools.core.reports import Subsidiaries
 
 
 def confirm_arch_commissions(write: bool = False):

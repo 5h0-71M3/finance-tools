@@ -1,6 +1,6 @@
 from dirlin.validation import BaseValidation
 
-from finance_tools.bar.core.checks import check_zip_code_matches, find_term_extension_transaction
+from finance_tools.core.checks import check_zip_code_matches, find_term_extension_transaction
 
 
 class DailyValidation(BaseValidation):

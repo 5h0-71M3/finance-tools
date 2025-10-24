@@ -26,11 +26,11 @@ __all__ = [
     "check_zip_code_matches",
 ]
 
-from finance_tools.bar.core.checks.zipcodes import check_zip_code_matches
+from finance_tools.core.checks.zipcodes import check_zip_code_matches
 ####################################
 # CHECKS THAT APPLY TO ALL CARRIERS
 ####################################
-from finance_tools.bar.core.checks.bdx import (
+from finance_tools.core.checks.bdx import (
     carrier_tria_zero_if_total_is_zero,
     transaction_id_is_nan,
     earned_unearned_field_is_zero,
@@ -40,7 +40,7 @@ from finance_tools.bar.core.checks.bdx import (
 ################################
 # Specific Carriers
 ################################
-from finance_tools.bar.core.checks.bdx import (
+from finance_tools.core.checks.bdx import (
     package_key_missing_on_expected_transactions,
     gwp_breakdown_matches_premium_total,
     gross_premium_amount_equals_base_gst_stamp_duty,
@@ -52,7 +52,7 @@ from finance_tools.bar.core.checks.bdx import (
 #################################
 # Google Sheet Commission Checks
 #################################
-from finance_tools.bar.core.checks.google_sheet_commissions import (
+from finance_tools.core.checks.google_sheet_commissions import (
     allianz_commission_rate_matches_google_sheet,
     aspen_commission_rate_matches_google_sheet,
     chaucer_commission_rate_matches_google_sheet,
@@ -65,7 +65,7 @@ from finance_tools.bar.core.checks.google_sheet_commissions import (
 #########################
 # CARRIER DETAIL CHECKS
 #########################
-from finance_tools.bar.core.checks.netsuite.carrier_details_section import (
+from finance_tools.core.checks.netsuite.carrier_details_section import (
     validate_carrier_bound_premium,
     validate_carrier_net_premium,
     validate_carrier_commission_to_coalition
@@ -75,14 +75,14 @@ from finance_tools.bar.core.checks.netsuite.carrier_details_section import (
 # COVERAGE DETAIL CHECKS
 #########################
 # Also known as the limit coverage section
-from finance_tools.bar.core.checks.netsuite.coverage_details_section import validate_limit_signature_matches_tbp
+from finance_tools.core.checks.netsuite.coverage_details_section import validate_limit_signature_matches_tbp
 
 #########################
 # CARRIER LEVEL CHECKS
 #########################
-from finance_tools.bar.core.checks.bdx.vantage import vantage_commission_rate_matches_google_sheet
+from finance_tools.core.checks.bdx.vantage import vantage_commission_rate_matches_google_sheet
 
 #########################
 # GENERAL SECTION CHECKS
 #########################
-from finance_tools.bar.core.checks.netsuite.general_section import find_term_extension_transaction
+from finance_tools.core.checks.netsuite.general_section import find_term_extension_transaction

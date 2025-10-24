@@ -1,9 +1,6 @@
 from datetime import date
 
-import pandas as pd
-from dirlin import Folder
-
-from finance_tools.bar.validation_object import DailyValidation
+from finance_tools.pipeline_v2.validation_object import DailyValidation
 from finance_tools.io import FOLDERS
 
 ######################################################################################

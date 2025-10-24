@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from finance_tools.bar.core.policy_stack.base import BaseTransactionLifecycle
+from finance_tools.core.policy_stack.base import BaseTransactionLifecycle
 
 
 @dataclass

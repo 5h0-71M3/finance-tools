@@ -12,7 +12,7 @@ f = FOLDERS()
 
 
 def validate_allianz(deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
-    """returns a list of DataFrames of the validation results summary for Allianz
+    """returns a list of DataFrames of the validations results summary for Allianz
     """
     # DATA PULL and FORMATTING
     allianz_us = f.get_allianz_us()
@@ -59,7 +59,7 @@ def validate_allianz(deliverable: Literal["summary", "error"]) -> list[pd.DataFr
 
 
 def validate_ascot(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for Ascot
+    """returns a DataFrame of the validations results summary for Ascot
     """
     ascot = f.get_ascot()
     ascot_pipeline = pipeline.BasicValidationUS()
@@ -71,7 +71,7 @@ def validate_ascot(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
 
 
 def validate_lloyds(deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
-    """returns a list of DataFrames of the validation results summary for Lloyds
+    """returns a list of DataFrames of the validations results summary for Lloyds
     """
     basic = pipeline.LloydsValidation()
     all_lloyds_results = []
@@ -153,7 +153,7 @@ def validate_lloyds_us(deliverable: Literal["summary", "error"]):
 
 
 def validate_fortegra(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for Fortegra
+    """returns a DataFrame of the validations results summary for Fortegra
     """
     fortegra_df = f.get_fortegra_bdx()
     fortegra_df["Coalition Commission%"] = Format.convert_percentage_to_float(fortegra_df["Coalition Commission%"])
@@ -168,7 +168,7 @@ def validate_fortegra(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
 
 
 def validate_chaucer(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for Chaucer
+    """returns a DataFrame of the validations results summary for Chaucer
     """
     chaucer_df = f.get_chaucer_bdx()
     chaucer_df["Chaucer %"] = Format.convert_percentage_to_float(chaucer_df["Chaucer %"])
@@ -182,7 +182,7 @@ def validate_chaucer(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
 
 
 def validate_msig(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for MSIG
+    """returns a DataFrame of the validations results summary for MSIG
     """
     msig_df = f.get_msig_bdx()
     # msig_df["Coalition Commission %"] = Format.convert_percentage_to_float(msig_df["Coalition Commission %"])
@@ -196,7 +196,7 @@ def validate_msig(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
     return results
 
 def validate_hdi(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for HDI
+    """returns a DataFrame of the validations results summary for HDI
     """
     hdi_df = f.get_hdi_bdx()
     hdi_df["Coalition Commission %"] = Format.convert_percentage_to_float(hdi_df["Coalition Commission %"])
@@ -211,7 +211,7 @@ def validate_hdi(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
 
 
 def validate_hartford(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for Hartford
+    """returns a DataFrame of the validations results summary for Hartford
     """
     hartford_df = f.get_hartford_bdx()
     hartford_df["Coalition Commission %"] = Format.convert_percentage_to_float(hartford_df["Coalition Commission %"])
@@ -226,7 +226,7 @@ def validate_hartford(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
 
 
 def validate_swissre(deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
-    """returns a DataFrame of the validation results summary for SwissRe
+    """returns a DataFrame of the validations results summary for SwissRe
     """
     swissre_reports: list[Literal["surplus", "admitted", "cad", "usd"]] = ["surplus", "admitted", "cad", "usd"]
     swissre_results = []
@@ -248,7 +248,7 @@ def validate_swissre(deliverable: Literal["summary", "error"]) -> list[pd.DataFr
 
 
 def validate_vantage(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-    """returns a DataFrame of the validation results summary for Vantage
+    """returns a DataFrame of the validations results summary for Vantage
     """
     # DATAFRAME PULL AND FORMATTING
     vantage_df = f.get_vantage_bdx()

@@ -1,7 +1,7 @@
 # 2025.04.30
 from dirlin import Directory
 
-from finance_tools.bar.validation.carriers import AllianzUSValidation
+from finance_tools.pipeline_v2.validations.carriers import AllianzUSValidation
 
 #  I am a little rusty on this package so let's just go step by step for the next
 # hour or so and at least finish this off with the check to determine future
