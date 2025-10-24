@@ -43,8 +43,7 @@ def infer_reported_date(
     return results
 
 
-def calculate_masterfile_totals():
-    f = FOLDERS()
+def calculate_masterfile_totals(f: FOLDERS):
     previous_master = f.get_cyber_master(tab="tie_out", previous_master=True)
 
     # based on research, we're going to stop the Tie Out portion with the text 'TBP Reconciliation'

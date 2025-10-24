@@ -22,6 +22,7 @@ from finance_tools.core.checks import (
     lloyds_uk_canada_commission_rate_matches_google_sheet
 )
 
+
 ##############################
 # HIGH LEVEL BASE VALIDATION
 ##############################

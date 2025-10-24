@@ -64,8 +64,7 @@ class CleanStack(list):
         return self.pop(-1)
 
 
-def clean_stack_from_policy_list():
-    f = FOLDERS()
+def clean_stack_from_policy_list(f: FOLDERS):
     df = f.get_policy_list()
 
     # (1) Formatting and Prepping the Policy List
@@ -96,7 +95,3 @@ def clean_stack_from_policy_list():
     print(df["Coalition Policy Number"].unique())
 
     print(df[df["Coalition Policy Number"] == "C-4MQ8-453750-CYBER-2025"][["TID", "EN", "Description", "TBP"]])
-
-
-clean_stack_from_policy_list()
-

@@ -1,25 +1,26 @@
 """We're starting this off as a way of seeing which Allianz reports have been sent"""
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 from tqdm import tqdm
 
 from finance_tools.io.directory_handler import FOLDERS
 
 
 def tie_master_to_policy_list(
+        f: FOLDERS,
         policy_list: pd.DataFrame | None = None,
         master_file_path: Path | None = None,
 ) -> pd.DataFrame:
     """gathers all the needed tabs from the masterfile into individual, referencable dataframes.
     I think this is used for the Ascot report.
 
+    :param f:
     :param policy_list: Dataframe
     :param master_file_path: Path to Master
     :return:
     """
     # [Part 1]: gathering reports and variables that are needed
-    f = FOLDERS()
 
     # [1.1]: Gathering the masterfiles
     tabs = ["master", "binder_edits", "soft_deletes", "zero_dollar",]

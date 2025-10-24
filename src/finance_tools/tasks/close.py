@@ -4,9 +4,9 @@ from datetime import date
 import pandas as pd
 from dirlin import DirlinFormatter
 
-from finance_tools.io.directory_handler import FOLDERS
-from finance_tools.core.reports import carrier_info_tuples, Subsidiaries
 from finance_tools.core.enums import stm_commission_percent_columns
+from finance_tools.core.reports import carrier_info_tuples, Subsidiaries
+from finance_tools.io.directory_handler import FOLDERS
 
 
 def _close_transaction_report():
@@ -22,7 +22,7 @@ class Task(ABC):
     This object will then split it out by Subsidiary for the final deliverable.
     """
     def __init__(self):
-        self.report: pd.DataFrame | None = None
+        self.report: pd.DataFrame = None
         self.name: str = self._defined_name()
         self.subsidiaries = list(Subsidiaries.__dict__.values())
         self.save_folder_path = FOLDERS(initialize_posix_path=False).DOWNLOADS

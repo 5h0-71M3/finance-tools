@@ -134,7 +134,6 @@ from finance_tools.io import FOLDERS
 # (carrier, quota_share, subsidiary, excess layer) ex. Allianz UK
 
 # Soft Delete File For Aspen
-f = FOLDERS()
 # df = f.get_master_log()
 # df.to_excel(f.DOWNLOADS / f"All Master Log - Soft Deletes - {date.today()}.xlsx")
 
@@ -202,9 +201,11 @@ f = FOLDERS()
 # aspen_itd_post.to_csv(f.DOWNLOADS / f"Aspen ITD Request - BDXs After Limit Balance - {date.today()}.csv")
 
 
-df = f.get_policy_list()
-dv = DailyValidation()
+if __name__ == "__main__":
+    f = FOLDERS()
+    df = f.get_policy_list()
+    dv = DailyValidation()
 
-log = dv.run_error_log(df)
-log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()}.csv")
+    log = dv.run_error_log(df)
+    log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()}.csv")
 

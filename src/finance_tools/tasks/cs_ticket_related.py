@@ -7,7 +7,7 @@ from finance_tools.io.directory_handler import FOLDERS
 """These may end up as validations in the future"""
 
 
-def find_erp_with_inactive_policy() -> pd.DataFrame:
+def find_erp_with_inactive_policy(f: FOLDERS) -> pd.DataFrame:
     """2025.05.29 the ask here was to identify the following transactions:
 
     Ask:
@@ -18,7 +18,6 @@ def find_erp_with_inactive_policy() -> pd.DataFrame:
 
     :return:
     """
-    f = FOLDERS()
     policy_list = f.get_policy_list()
 
     # ===[1.1]=== create the masks we think we'll be needing to solve this
@@ -64,9 +63,8 @@ def find_erp_with_inactive_policy() -> pd.DataFrame:
     return applied_df
 
 
-def multiple_polices_under_policyholder() -> pd.DataFrame:
+def multiple_polices_under_policyholder(f: FOLDERS) -> pd.DataFrame:
     """finds situations where one policyholder has multiple policies under policyholder"""
-    f = FOLDERS()
     stm = f.get_stm_transactions()
 
     for c in stm.columns:

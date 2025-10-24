@@ -4,8 +4,6 @@ from datetime import date
 from finance_tools.io import FOLDERS
 from finance_tools.io.directory_handler import get_master_files, data_cleaner
 
-f = FOLDERS()
-
 # df = f.get_policy_list()
 # df["Expected State"] = df["Insured Zip Code"].apply(lambda z: expected_state(z))
 # df.to_csv(f"With Expected Zip - {date.today()} - policy_list.csv")
@@ -76,3 +74,7 @@ f = FOLDERS()
 # df = get_master_files()
 # df.to_csv(f.DOWNLOADS / f"First duckdb - {date.today()} - query.csv")
 # print(df.info())
+
+if __name__ == "__main__":
+    f = FOLDERS()
+    ...

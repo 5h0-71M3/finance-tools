@@ -5,10 +5,8 @@ import pandas as pd
 
 from finance_tools.io import FOLDERS
 
-f = FOLDERS()
 
-
-def er_limit_from_looker():
+def er_limit_from_looker(f: FOLDERS):
     df = f.DOWNLOADS.open_recent("exec_risks")
 
     df["Endorsements Coverage Endorsement Form Codes"] = df["Endorsements Coverage Endorsement Form Codes"].fillna("Missing")
@@ -36,7 +34,7 @@ def er_limit_from_looker():
     pd.DataFrame.from_dict(mapl).to_csv(f.DOWNLOADS / f"ERP Endorsements Not Mapped in Netsuite - {date.today()}.csv")
 
 
-def handle_er_limit_merge():
+def handle_er_limit_merge(f: FOLDERS):
     df = f.DOWNLOADS.open_recent("exec_risks")
 
     # RUN-OFF ENDORSEMENT (REMOVE SUCCESSOR ENTITY) - ERUSP-50EN-00A073-0225-01
@@ -115,4 +113,5 @@ def handle_er_limit_merge():
 
 
 if __name__ == "__main__":
-    er_limit_from_looker()
+    f = FOLDERS()
+    er_limit_from_looker(f)

@@ -26,7 +26,6 @@ __all__ = [
     "check_zip_code_matches",
 ]
 
-from finance_tools.core.checks.zipcodes import check_zip_code_matches
 ####################################
 # CHECKS THAT APPLY TO ALL CARRIERS
 ####################################
@@ -36,7 +35,6 @@ from finance_tools.core.checks.bdx import (
     earned_unearned_field_is_zero,
     surplus_3_0_filled
 )
-
 ################################
 # Specific Carriers
 ################################
@@ -48,7 +46,10 @@ from finance_tools.core.checks.bdx import (
     fortegra_v2_columns_are_blank,
     lloyds_er_coverage_premium_matches_total
 )
-
+#########################
+# CARRIER LEVEL CHECKS
+#########################
+from finance_tools.core.checks.bdx.vantage import vantage_commission_rate_matches_google_sheet
 #################################
 # Google Sheet Commission Checks
 #################################
@@ -60,8 +61,6 @@ from finance_tools.core.checks.google_sheet_commissions import (
     lloyds_er_commission_rate_matches_google_sheet,
     lloyds_uk_canada_commission_rate_matches_google_sheet
 )
-
-
 #########################
 # CARRIER DETAIL CHECKS
 #########################
@@ -70,19 +69,13 @@ from finance_tools.core.checks.netsuite.carrier_details_section import (
     validate_carrier_net_premium,
     validate_carrier_commission_to_coalition
 )
-
 #########################
 # COVERAGE DETAIL CHECKS
 #########################
 # Also known as the limit coverage section
 from finance_tools.core.checks.netsuite.coverage_details_section import validate_limit_signature_matches_tbp
-
-#########################
-# CARRIER LEVEL CHECKS
-#########################
-from finance_tools.core.checks.bdx.vantage import vantage_commission_rate_matches_google_sheet
-
 #########################
 # GENERAL SECTION CHECKS
 #########################
 from finance_tools.core.checks.netsuite.general_section import find_term_extension_transaction
+from finance_tools.core.checks.zipcodes import check_zip_code_matches

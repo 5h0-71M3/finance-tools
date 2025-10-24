@@ -7,11 +7,9 @@ from dirlin import Folder
 from rich.console import Console
 from typing_extensions import Annotated
 
-from finance_tools.pipeline_v2.validation_object import DailyValidation
-
-
 from finance_tools.deliverables import download_validation_log, export_masterfile_reported, swissre_doc_namer
 from finance_tools.io.directory_handler import FOLDERS
+from finance_tools.pipeline_v2.validation_object import DailyValidation
 
 app = typer.Typer()
 console = Console()

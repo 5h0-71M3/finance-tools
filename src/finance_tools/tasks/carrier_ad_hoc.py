@@ -2,14 +2,14 @@
 from datetime import date
 
 import pandas as pd
-
-from finance_tools.io.directory_handler import FOLDERS
 from dirlin import DirlinFormatter
 
-from finance_tools.core.reports import Subsidiaries
+from finance_tools.core.reports.policy_list import Subsidiaries
+from finance_tools.io.directory_handler import FOLDERS
+from finance_tools.pipeline_v2.validations.carriers import AllianzUKValidation
 
 
-def confirm_arch_commissions(write: bool = False):
+def confirm_arch_commissions(f: FOLDERS, write: bool = False):
     """Arch sent us files of incorrect rates after an upload file was sent to them.
     The task is to confirm how these were missed, and if these are on us or them.
 
@@ -21,7 +21,6 @@ def confirm_arch_commissions(write: bool = False):
 
     :return:
     """
-    f = FOLDERS()
 
     # ===[1.1]=== Organize all the files we are dealing with and will need
 
@@ -92,14 +91,14 @@ def confirm_arch_commissions(write: bool = False):
 
 
 def match_arch_policy_number(
-        stm_report: pd.DataFrame | None = None,
-        requested: pd.DataFrame | None = None,
+        f: FOLDERS,
+        stm_report: pd.DataFrame = None,
+        requested: pd.DataFrame = None,
         requested_binder_header: str = "Coalition Full Policy Number"
 ) -> pd.DataFrame:
     """request to tie the binder id to Coalition Policy Number
     """
     # [1.1] gather all the reports needed to tie out
-    f = FOLDERS()
     if stm_report is None:
         stm_report = f.get_stm_transactions()
 
@@ -129,6 +128,7 @@ def match_arch_policy_number(
 
 
 def lloyds_umr_bound_against(
+        f: FOLDERS,
         subsidiaries: Subsidiaries | list[Subsidiaries] | None = None,
         umr_lookup: str | list[str] | None = None,
         effective_date: date | None = None,
@@ -137,13 +137,13 @@ def lloyds_umr_bound_against(
     but with policy effective dates on or after 4/1/2025
     (being the effective date of the renewal binders and after the expiration date of the 2024 binders)?
 
+    :param f:
     :param subsidiaries: The subsidiaries we are searching in. The request was for UK and Canada so defaults to that.
     :param umr_lookup: the UMR we want to check against. Need to look at which ones were the 2024 UMRs. Defaults to 2024 UMRs.
     :param effective_date: the effective date for the policies we are searching under. Includes the date as well.
     """
     # ===[1.0]=== Handling the variables and parameters
     # [1.1] Directory handling
-    f = FOLDERS()
     policy_list = f.get_policy_list()
 
     # [1.2] handle the default variables and params
@@ -216,8 +216,7 @@ def lloyds_umr_bound_against(
     return grouped_policy_list[columns_wanted]
 
 
-def allianz_france_testing():
-    f = FOLDERS()
+def allianz_france_testing(f: FOLDERS):
     file = f.DOWNLOADS.open_recent("Test Non Pro")
 
     file["Allianz Quota Share %"] = DirlinFormatter.convert_percentage_to_float(file["Allianz Quota Share %"])

@@ -10,7 +10,7 @@ from finance_tools.core.reports.policy_list import (
     _reported_date_headers,
     carrier_info_tuples
 )
-
+from finance_tools.io.directory_handler import FOLDERS
 from finance_tools.pipeline_v2.validations.api import (
     validate_ascot,
     validate_allianz,
@@ -25,13 +25,10 @@ from finance_tools.pipeline_v2.validations.api import (
     validate_swissre,
     validate_lloyds_us
 )
-from finance_tools.io.directory_handler import FOLDERS
 from finance_tools.tasks.masterfile.masterfile_validation import infer_reported_date
 
-f = FOLDERS()
 
-
-def download_validation_log():
+def download_validation_log(f: FOLDERS):
     """Generates the summary sheet for all available Carriers in the Account Current folder
     """
     #  [Split]
@@ -131,6 +128,7 @@ def download_validation_log():
 
 
 def export_masterfile_reported(
+        f: FOLDERS,
         curr_master: Literal['cyber', 'mpl'] | pd.DataFrame | None = None,
         year: int | None = None,
         month: int | None = None,
@@ -138,6 +136,7 @@ def export_masterfile_reported(
     """creates the upload file for the transactions your reported for the month on
     Netsuite, based on the Master File
 
+    :param f: instance of the FOLDERS object
     :param curr_master: the Master File you want to create the file from
     :param year: the year of the reporting. Defaults to previous month's year
     :param month: the month of the reporting. Defaults to previous month

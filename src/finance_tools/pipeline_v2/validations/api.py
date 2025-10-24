@@ -1,4 +1,21 @@
 # performs the validations
+from finance_tools.pipeline_v2.validations.carriers import (
+    # Generic Validation Classes
+    BasicValidation,  # used for HDI, Hartford
+    AustraliaValidation,  # used for Allianz Australia and MSIG
+    BasicValidationUS,  # used for Ascot
+    # Carrier Validations
+    AllianzBasicValidation,  # used for Allianz Germany, UK, Nordics
+    AllianzUSValidation,  # used for Allianz US
+    AllianzUKValidation,  # used for Allianz UK
+    ChaucerValidation,  # used for the Chaucer validations,
+    FortegraValidation,  # For Fortegra Validation
+    LloydsValidation,  # For Lloyds Validation
+    LloydsUnitedStatesValidation,  # for Lloyds US
+    LloydsExecutiveRiskValidation,  # used for Lloyds ER
+    SwissReValidation,  # used for all SwissRe (CAD, USD, Surplus, Admitted)
+    VantageValidation,  # used for VantageValidation
+)
 from finance_tools.pipeline_v2.validations.reports import (
     validate_allianz,
     validate_ascot,
@@ -16,24 +33,6 @@ from finance_tools.pipeline_v2.validations.reports import (
 )
 
 # todo add Aspen Validations
-
-from finance_tools.pipeline_v2.validations.carriers import (
-    # Generic Validation Classes
-    BasicValidation,  # used for HDI, Hartford
-    AustraliaValidation,  # used for Allianz Australia and MSIG
-    BasicValidationUS,  # used for Ascot
-    # Carrier Validations
-    AllianzBasicValidation,  # used for Allianz Germany, UK, Nordics
-    AllianzUSValidation,  # used for Allianz US
-    AllianzUKValidation,  # used for Allianz UK
-    ChaucerValidation,  # used for the Chaucer validations,
-    FortegraValidation,   # For Fortegra Validation
-    LloydsValidation,  # For Lloyds Validation
-    LloydsUnitedStatesValidation,  # for Lloyds US
-    LloydsExecutiveRiskValidation,  # used for Lloyds ER
-    SwissReValidation,  # used for all SwissRe (CAD, USD, Surplus, Admitted)
-    VantageValidation,  # used for VantageValidation
-)
 
 # Daily Checks
 # from src.pipeline_v2.validations import DailyValidation

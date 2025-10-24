@@ -1,7 +1,4 @@
-from datetime import date
-
 import pandas as pd
-from dateutil.utils import today
 
 
 def find_term_extension_transaction(
