@@ -1,0 +1,18 @@
+WITH all_rows AS (
+    {%- for f in files %}
+    SELECT
+        $column,
+        '{{ f }}' AS _source_file
+    FROM read_xlsx(
+         '{{ f }}',
+         sheet = $sheet,
+         header = $header
+    )
+    {%- if not loop.last %} UNION ALL {% endif -%}
+    {%- endfor %}
+)
+
+SELECT
+    TRY_CAST("Vantage Quota Share" AS DOUBLE) AS "Vantage Quota Share",
+    _source_file
+FROM all_rows

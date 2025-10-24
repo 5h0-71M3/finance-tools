@@ -21,5 +21,6 @@ finance-tools [command] [args]
 | `generate-arch-upload`             | `Netsuite Uploads` | Uploads the Arch files for Claims reporting       |
 | `sre-policy-docs`                  | `Ad-Hoc`           | Runs the SRE Policy Doc Naming                    |
 | `get-itd`                          | `Ad-Hoc`           | Runs the find and combine for the Desktop folders |
+| `add_sre_doc_file`                 | `Ad-Hoc`           | Creates the template for SwissRe policy docs      |
 
 

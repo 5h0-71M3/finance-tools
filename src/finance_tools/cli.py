@@ -101,6 +101,62 @@ def sre_policy_docs():
 
 
 @app.command()
+def add_sre_doc_file(
+        use: Annotated[str, typer.Option("--use", "-u")]
+):
+    """creates the template file so you can fill it out with the information you need
+
+    :param use: the document to use for the base Internal ID
+    :return:
+    """
+    # Grabbing the File and Finding Internal ID
+    required_columns = [
+        "Internal ID",
+        "Transaction Description",
+        "Full Policy",
+        "Coalition Policy Number",
+        "Endorsement Number",
+        "Transaction Type",
+        "Policy UUID"
+    ]
+
+    # Checking which columns are available
+    df = f.DOWNLOADS.open_recent(use)
+    if "Internal ID" not in df.columns:
+        raise KeyError("Internal ID column not found, but is required.")
+    columns = set(df.columns)  # get the available columns from whatever report you just pulled
+    available = columns & set(required_columns)  # gives you what's available in the df
+
+    # Check to see if we need anything from the Policy List
+    need_from_pl = set(required_columns) - columns
+    deliverable = df[list(available)].copy()
+    if need_from_pl:
+        pl = f.get_policy_list(set_index=True)
+        deliverable = deliverable.set_index("Internal ID")
+
+        for col in need_from_pl:
+            deliverable[col] = pl[col]
+        deliverable = deliverable.reset_index(drop=False)
+
+    # Finally, align the columns in the order we expect
+    deliverable["filepath"] = None  # user will need to fill this in
+    deliverable = deliverable.rename(columns={"Full Policy": "Carrier Policy Number"})
+    file_format = [
+        "Internal ID",
+        "Transaction Description",
+        "filepath",
+        "Carrier Policy Number",
+        "Coalition Policy Number",
+        "Endorsement Number",
+        "Transaction Type",
+        "Policy UUID",
+    ]
+    deliverable = deliverable[file_format].copy()
+    filename = f"SwissRe Doc Namer File - {date.today()}.xlsx"
+    deliverable.to_excel(f.DOWNLOADS / filename, index=False)
+
+
+@app.command()
 def get_itd(
         carrier: str,
         segment: Annotated[

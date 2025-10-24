@@ -1,7 +1,8 @@
 from datetime import date
 
-from finance_tools.bar.core.checks.zipcodes import zip_code_variances
+# from finance_tools.bar.core.checks.zipcodes import zip_code_variances
 from finance_tools.io import FOLDERS
+from finance_tools.io.directory_handler import get_master_files, data_cleaner
 
 f = FOLDERS()
 
@@ -53,10 +54,25 @@ f = FOLDERS()
 # _expected_state = [expected_state(z) for z in zips]
 # print(_expected_state)
 
-pl = f.get_policy_list()
-subsidiary_mask = pl["Subsidiary [Agency Customer]"] == "ProForma : GAAP : MGA Consolidation : Coalition, Inc"
-pl = pl[subsidiary_mask].copy()
-pl = pl.set_index("Internal ID", drop=True)
+# pl = f.get_policy_list()
+# subsidiary_mask = pl["Subsidiary [Agency Customer]"] == "ProForma : GAAP : MGA Consolidation : Coalition, Inc"
+# pl = pl[subsidiary_mask].copy()
+# pl = pl.set_index("Internal ID", drop=True)
+#
+# df = zip_code_variances(zip_codes=pl["Insured Zip Code"], states=pl["Insured State"])
+# df.to_csv(f.DOWNLOADS / f"Zip Code Variances - ITD - {date.today()}.csv")
 
-df = zip_code_variances(zip_codes=pl["Insured Zip Code"], states=pl["Insured State"])
-df.to_csv(f.DOWNLOADS / f"Zip Code Variances - ITD - {date.today()}.csv")
+# data_cleaner(
+#     f.DESKTOP / f"Masters",
+#     export_path=f.DOWNLOADS,
+#     query_path=f.DEVELOPER / "finance-tools/src/finance_tools/core/sql/master_file.sql.j2",
+#     out_path=f.DOWNLOADS / f"Masters.parquet"
+# )
+
+
+#
+
+
+# df = get_master_files()
+# df.to_csv(f.DOWNLOADS / f"First duckdb - {date.today()} - query.csv")
+# print(df.info())

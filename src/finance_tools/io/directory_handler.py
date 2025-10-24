@@ -1,13 +1,64 @@
 from datetime import date
 from typing import Literal
 
+import duckdb
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from dirlin import Folder, Directory, Path
 from dirlin.core.api import DirlinFormatter as Format
+from jinja2 import Template
 from tqdm import tqdm
 
 from finance_tools.io._config import directory_config
+
+
+def data_cleaner(
+        folder_path: Path,
+        export_path: Path,
+        query_path: Path,
+        out_path: Path,
+):
+    """Helps convert the XLSX files into something that DuckDB can handle.
+    """
+    with duckdb.connect() as conn:
+        conn.execute("INSTALL excel; LOAD excel;")
+        # Get the relevant files
+        files = [str(p) for p in folder_path.rglob("*.xlsx")]
+
+        # Query to combine all the Excel files together
+        tmpl = Template(query_path.read_text())
+        rendered_tmpl = tmpl.render(files=files, range=True)
+
+        # KWARGS based on the template
+        # anything with $ is a kw argument
+        tmpl_kwarg = {
+            "sheet": "Master",
+            "header": True,
+        }
+        df = conn.execute(rendered_tmpl, tmpl_kwarg).df()
+
+        # MAKE IT INTO A PARQUET FILE
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        conn.execute(
+            f"""
+            COPY ({rendered_tmpl})
+            TO '{out_path.as_posix()}'
+            (FORMAT PARQUET);
+            """, tmpl_kwarg
+        )
+        return df
+
+
+def get_master_files():
+    """uses DuckDB to grab the Master Files from the Masters folder on the Desktop.
+    """
+    with open("/finance_tools/core/sql/master_file.sql.j2", "r") as f:
+        query = f.read()
+
+    with duckdb.connect() as conn:
+        results = conn.execute(query)
+        df = results.fetchdf()
+    return df
 
 
 class FOLDERS(Directory):
@@ -57,15 +108,19 @@ class FOLDERS(Directory):
     def get_policy_list(
             self,
             path: str | Path | None = None,
+            set_index: bool = False,
     ) -> pd.DataFrame:
         """Pulls the most recent policy list from a directory. Unless given, will pull from the DOWNLOADS folder.
 
+        :param set_index: sets Internal ID as index
         :param path: alternate path or specific path to the PolicyList file
         """
         if path is None:
             df = self.DOWNLOADS.open_recent("PolicyList")
-            return df
-        df = self.folder.open(path)
+        else:
+            df = self.folder.open(path)
+        if set_index:
+            df = df.set_index("Internal ID")
         return df
 
     def get_stm_transactions(
