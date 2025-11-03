@@ -11,120 +11,108 @@ from finance_tools.core.reports.policy_list import (
     carrier_info_tuples
 )
 from finance_tools.io.directory_handler import FOLDERS
-from finance_tools.pipeline_v2.validations.api import (
-    validate_ascot,
-    validate_allianz,
-    validate_lloyds,
-    validate_vantage,
-    validate_hartford,
-    validate_chaucer,
-    validate_fortegra,
-    validate_hdi,
-    validate_msig,
-    validate_lloyds_er,
-    validate_swissre,
-    validate_lloyds_us
-)
+
+
 from finance_tools.tasks.masterfile.masterfile_validation import infer_reported_date
 
 
-def download_validation_log(f: FOLDERS):
-    """Generates the summary sheet for all available Carriers in the Account Current folder
-    """
-    #  [Split]
-    day_dict = {
-        1: [validate_vantage],
-        5: [
-            validate_ascot,
-            validate_allianz,
-            validate_lloyds
-        ],
-        10: [
-            validate_chaucer,
-            validate_fortegra,
-            validate_hartford,
-            validate_hdi,
-            validate_msig
-        ],
-        15: [
-            validate_lloyds_us,
-            validate_lloyds_er,
-            validate_swissre
-        ]
-    }
-
-    # [1.1] add the functions in a loop so we can iterate through
-    fn_store = [
-        validate_vantage,
-        validate_ascot,
-        validate_allianz,
-        validate_chaucer,
-        validate_fortegra,
-        validate_hartford,
-        validate_hdi,
-        validate_msig,
-        validate_lloyds,
-        validate_lloyds_er,
-        validate_lloyds_us,
-        validate_swissre,
-    ]
-
-    # [1.2] get the summary results
-    summary_results = []
-    validation_results = []
-    errored_results = []
-    for fn in fn_store:
-        try:
-            # [1.2.1] Creating the Summary Sheet
-            summary_result = fn("summary")
-            summary_results.append(summary_result)
-
-            # [1.2.2] Creating the Error Log
-            validation_result = fn("error")
-            validation_results.append(validation_result)
-        except ValueError as ve:
-            print(f"{ve}: {fn.__name__} [ve]")
-            errored_results.append(str(fn.__name__))
-        except KeyError as ke:
-            print(f"{ke}: {fn.__name__} [ke]")
-            errored_results.append(str(fn.__name__))
-        except FileNotFoundError as fnf:
-            print(f"{fnf}: {fn.__name__} [fnf]")
-            errored_results.append(str(fn.__name__))
-
-    # === Creating the Summary Sheet for the Carriers ===
-    deliverables = []
-    for result in summary_results:
-        if isinstance(result, list):
-            deliverables.extend(result)
-            continue
-        deliverables.append(result)
-    try:
-        summary_df = pd.concat(deliverables)
-    except ValueError as ve:
-        print(ve)
-        summary_df = deliverables
-
-    completed = []
-    for val in validation_results:
-        if isinstance(val, list):
-            completed.extend(val)
-            continue
-        completed.append(val)
-
-    # Saving the Two DataFrames as an Excel File
-    with pd.ExcelWriter(f.DOWNLOADS / f"BDX Validation Summary {date.today()} - Available.xlsx") as worksheet:
-        summary_df.to_excel(worksheet, sheet_name="Summary")
-        for idx, df in enumerate(completed):
-            try:
-                df.to_excel(worksheet, sheet_name=f"Carrier {df['Group'].iloc[0]}")
-            except IndexError as ie:
-                print()
-                print(df.info())
-                print("***")
-            except AttributeError as ae:
-                print(ae)
-    print(f"DID NOT CREATE: {errored_results}")
+# def download_validation_log(f: FOLDERS):
+#     """Generates the summary sheet for all available Carriers in the Account Current folder
+#     """
+#     #  [Split]
+#     day_dict = {
+#         1: [validate_vantage],
+#         5: [
+#             validate_ascot,
+#             validate_allianz,
+#             validate_lloyds
+#         ],
+#         10: [
+#             validate_chaucer,
+#             validate_fortegra,
+#             validate_hartford,
+#             validate_hdi,
+#             validate_msig
+#         ],
+#         15: [
+#             validate_lloyds_us,
+#             validate_lloyds_er,
+#             validate_swissre
+#         ]
+#     }
+#
+#     # [1.1] add the functions in a loop so we can iterate through
+#     fn_store = [
+#         validate_vantage,
+#         validate_ascot,
+#         validate_allianz,
+#         validate_chaucer,
+#         validate_fortegra,
+#         validate_hartford,
+#         validate_hdi,
+#         validate_msig,
+#         validate_lloyds,
+#         validate_lloyds_er,
+#         validate_lloyds_us,
+#         validate_swissre,
+#     ]
+#
+#     # [1.2] get the summary results
+#     summary_results = []
+#     validation_results = []
+#     errored_results = []
+#     for fn in fn_store:
+#         try:
+#             # [1.2.1] Creating the Summary Sheet
+#             summary_result = fn("summary")
+#             summary_results.append(summary_result)
+#
+#             # [1.2.2] Creating the Error Log
+#             validation_result = fn("error")
+#             validation_results.append(validation_result)
+#         except ValueError as ve:
+#             print(f"{ve}: {fn.__name__} [ve]")
+#             errored_results.append(str(fn.__name__))
+#         except KeyError as ke:
+#             print(f"{ke}: {fn.__name__} [ke]")
+#             errored_results.append(str(fn.__name__))
+#         except FileNotFoundError as fnf:
+#             print(f"{fnf}: {fn.__name__} [fnf]")
+#             errored_results.append(str(fn.__name__))
+#
+#     # === Creating the Summary Sheet for the Carriers ===
+#     deliverables = []
+#     for result in summary_results:
+#         if isinstance(result, list):
+#             deliverables.extend(result)
+#             continue
+#         deliverables.append(result)
+#     try:
+#         summary_df = pd.concat(deliverables)
+#     except ValueError as ve:
+#         print(ve)
+#         summary_df = deliverables
+#
+#     completed = []
+#     for val in validation_results:
+#         if isinstance(val, list):
+#             completed.extend(val)
+#             continue
+#         completed.append(val)
+#
+#     # Saving the Two DataFrames as an Excel File
+#     with pd.ExcelWriter(f.DOWNLOADS / f"BDX Validation Summary {date.today()} - Available.xlsx") as worksheet:
+#         summary_df.to_excel(worksheet, sheet_name="Summary")
+#         for idx, df in enumerate(completed):
+#             try:
+#                 df.to_excel(worksheet, sheet_name=f"Carrier {df['Group'].iloc[0]}")
+#             except IndexError as ie:
+#                 print()
+#                 print(df.info())
+#                 print("***")
+#             except AttributeError as ae:
+#                 print(ae)
+#     print(f"DID NOT CREATE: {errored_results}")
 
 
 def export_masterfile_reported(

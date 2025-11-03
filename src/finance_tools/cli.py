@@ -7,9 +7,11 @@ from dirlin import Folder
 from rich.console import Console
 from typing_extensions import Annotated
 
-from finance_tools.deliverables import download_validation_log, export_masterfile_reported, swissre_doc_namer
+from finance_tools.core.checks import find_term_extension_transaction
+from finance_tools.deliverables import export_masterfile_reported, swissre_doc_namer
 from finance_tools.io.directory_handler import FOLDERS
 from finance_tools.pipeline_v2.validation_object import DailyValidation
+from finance_tools.tasks.ad_hoc import current_reported, compare_to_itd
 
 app = typer.Typer()
 console = Console()
@@ -19,10 +21,10 @@ f = FOLDERS()
 ############################
 # BDX SUPPORT
 ############################
-@app.command()
-def validate_bdx():
-    """Function for running the validations log for available BDX reports"""
-    download_validation_log()
+# @app.command()
+# def validate_bdx():
+#     """Function for running the validations log for available BDX reports"""
+#     download_validation_log(f)
 
 
 @app.command()
@@ -62,18 +64,19 @@ def daily_checks():
         2.
     """
     df = f.get_policy_list()
-    dv = DailyValidation()
+    opl = f.DOWNLOADS.open_recent("v4 - indexer")
 
-    log = dv.run_error_log(df)
-    log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()}.csv")
+    # Term Extension
+    log = find_term_extension_transaction(df, opl)
+    log.to_csv(f.DOWNLOADS / f"Daily Check - {date.today()} - 1.csv")
 
 
 @app.command()
 def generate_reported():
     """Generates the reported upload for Netsuite. NEED: the Masterfile in Production Account Current folder.
     """
-    cyber = export_masterfile_reported()
-    mpl = export_masterfile_reported("mpl")
+    cyber = export_masterfile_reported(f)
+    mpl = export_masterfile_reported(f, "mpl")
 
     cyber.to_csv(f / f"Reported Masterfile - Cyber - {date.today()}.csv")
     mpl.to_csv(f / f"Reported Masterfile - MPL - {date.today()}.csv")
@@ -115,7 +118,8 @@ def add_sre_doc_file(
         "Coalition Policy Number",
         "Endorsement Number",
         "Transaction Type",
-        "Policy UUID"
+        "Policy UUID",
+        "Endorsement UUID (endts only)",
     ]
 
     # Checking which columns are available
@@ -148,6 +152,7 @@ def add_sre_doc_file(
         "Endorsement Number",
         "Transaction Type",
         "Policy UUID",
+        "Endorsement UUID (endts only)"
     ]
     deliverable = deliverable[file_format].copy()
     filename = f"SwissRe Doc Namer File - {date.today()}.xlsx"
@@ -189,3 +194,13 @@ def get_itd(
 
         files = Folder(path).find_and_combine(recurse=True)
         files.to_csv(path / filename)
+
+
+@app.command()
+def get_not_reported():
+    df = current_reported(f.get_policy_list())
+    folder = Folder(f.DESKTOP / "SwissRe/2023")
+    itd_df = folder.open("ITD - ran 2025-10-16 - SwissRe - 2023.csv")
+
+    df = compare_to_itd(df, itd_df)
+    df.to_excel(f.DOWNLOADS / f"SwissRe Non-Reported - With ITD Info - {date.today()}.xlsx")
