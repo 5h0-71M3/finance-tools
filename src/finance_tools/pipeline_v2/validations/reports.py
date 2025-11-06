@@ -1,124 +1,129 @@
-# from typing import Literal
-#
-# import pandas as pd
-#
-# import finance_tools.pipeline_v2 as pipeline
-# from finance_tools.io.directory_handler import FOLDERS
-#
-# from dirlin.core.api import DirlinFormatter as Format
+from typing import Literal
+
+import pandas as pd
+
+import finance_tools.pipeline_v2 as pipeline
+
+from dirlin.core.api import DirlinFormatter as Format
+
+from finance_tools.io import FOLDERS
+from finance_tools.pipeline_v2.validations.carriers import VantageValidation, AllianzUSValidation, AllianzUKValidation, \
+    AustraliaValidation, BasicValidationUS, LloydsValidation, FortegraValidation
+
+
 #
 # # GLOBAL
 # # f = FOLDERS()
 #
 #
-# def validate_allianz(deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
-#     """returns a list of DataFrames of the validations results summary for Allianz
-#     """
+def validate_allianz(f: FOLDERS, deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
+    """returns a list of DataFrames of the validations results summary for Allianz
+    """
 #     # DATA PULL and FORMATTING
-#     allianz_us = f.get_allianz_us()
-#     allianz_uk_primary = f.get_allianz_uk(version="primary")
-#     allianz_uk_excess = f.get_allianz_uk(version="excess")
-#     allianz_aus = f.get_allianz_aus(version="aus")
-#     allianz_aus_as_uk = f.get_allianz_aus(version="uk")
-#     allianz_germany = f.get_allianz_germany()
-#     allianz_denmark = f.get_allianz_denmark()
+    allianz_us = f.get_allianz_us()
+    allianz_uk_primary = f.get_allianz_uk(version="primary")
+    allianz_uk_excess = f.get_allianz_uk(version="excess")
+    allianz_aus = f.get_allianz_aus(version="aus")
+    allianz_aus_as_uk = f.get_allianz_aus(version="uk")
+    allianz_germany = f.get_allianz_germany()
+    allianz_denmark = f.get_allianz_denmark()
 #
 #     # VALIDATION and CHECKS
-#     allianz_us_pipeline = pipeline.AllianzUSValidation()
-#     allianz_uk_pipeline = pipeline.AllianzUKValidation()
-#     allianz_australia_pipeline = pipeline.AustraliaValidation()
+    allianz_us_pipeline = AllianzUSValidation()
+    allianz_uk_pipeline = AllianzUKValidation()
+    allianz_australia_pipeline = AustraliaValidation()
 #
 #     # RESULTS of SUMMARY
-#     if deliverable == "summary":
-#         allianz_us_results = allianz_us_pipeline.run_summary(allianz_us, "Allianz US")
-#         allianz_uk_primary_results = allianz_uk_pipeline.run_summary(allianz_uk_primary, "Allianz UK Primary")
-#         allianz_uk_excess_results = allianz_uk_pipeline.run_summary(allianz_uk_excess, "Allianz UK Excess")
-#         allianz_aus_results = allianz_australia_pipeline.run_summary(allianz_aus, "Allianz AUS")
-#         allianz_aus_as_uk_results = allianz_uk_pipeline.run_summary(allianz_aus_as_uk, "Allianz AUS (UK)")
-#         allianz_germany_results = allianz_uk_pipeline.run_summary(allianz_germany, "Allianz Germany")
-#         allianz_denmark_results = allianz_uk_pipeline.run_summary(allianz_denmark, "Allianz Denmark")
-#     else:
-#         allianz_us_results = allianz_us_pipeline.run_error_log(allianz_us, "Allianz US")
-#         allianz_uk_primary_results = allianz_uk_pipeline.run_error_log(allianz_uk_primary, "Allianz UK Primary")
-#         allianz_uk_excess_results = allianz_uk_pipeline.run_error_log(allianz_uk_excess, "Allianz UK Excess")
-#         allianz_aus_results = allianz_australia_pipeline.run_error_log(allianz_aus, "Allianz AUS")
-#         allianz_aus_as_uk_results = allianz_uk_pipeline.run_error_log(allianz_aus_as_uk, "Allianz AUS (UK)")
-#         allianz_germany_results = allianz_uk_pipeline.run_error_log(allianz_germany, "Allianz Germany")
-#         allianz_denmark_results = allianz_uk_pipeline.run_error_log(allianz_denmark, "Allianz Denmark")
-#
-#     all_allianz_results = [
-#         allianz_us_results,
-#         allianz_aus_results,
-#         allianz_aus_as_uk_results,
-#         allianz_denmark_results,
-#         allianz_germany_results,
-#         allianz_uk_primary_results,
-#         allianz_uk_excess_results
-#     ]
-#     return all_allianz_results
-#
-#
-# def validate_ascot(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-#     """returns a DataFrame of the validations results summary for Ascot
-#     """
-#     ascot = f.get_ascot()
-#     ascot_pipeline = pipeline.BasicValidationUS()
-#     if deliverable == "summary":
-#         ascot_results = ascot_pipeline.run_summary(ascot, "Ascot")
-#     else:
-#         ascot_results = ascot_pipeline.run_error_log(ascot, "Ascot")
-#     return ascot_results
-#
-#
-# def validate_lloyds(deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
-#     """returns a list of DataFrames of the validations results summary for Lloyds
-#     """
-#     basic = pipeline.LloydsValidation()
-#     all_lloyds_results = []
-#
-#     try:
-#         lloyds_uk_2023 = f.get_lloyds_uk(version="2023")
-#         if deliverable == "summary":
-#             lloyds_uk_2023_results = basic.run_summary(lloyds_uk_2023, "Lloyds UK 2023")
-#         else:
-#             lloyds_uk_2023_results = basic.run_error_log(lloyds_uk_2023, "Lloyds UK 2023")
-#         all_lloyds_results.append(lloyds_uk_2023_results)
-#     except FileNotFoundError as fnf:
-#         print(fnf.args)
-#
-#     try:
-#         lloyds_can_2023 = f.get_lloyds_canada(version="2023")
-#         if deliverable == "summary":
-#             lloyds_can_2023_results = basic.run_summary(lloyds_can_2023, "Lloyds Canada 2023")
-#         else:
-#             lloyds_can_2023_results = basic.run_error_log(lloyds_can_2023, "Lloyds Canada 2023")
-#         all_lloyds_results.append(lloyds_can_2023_results)
-#     except FileNotFoundError:
-#         pass
-#
-#     lloyds_can_2024 = f.get_lloyds_canada(version="2024")
-#     lloyds_uk_2024 = f.get_lloyds_uk(version="2024")
-#     lloyds_can_2025 = f.get_lloyds_canada(version="2025")
-#     lloyds_uk_2025 = f.get_lloyds_uk(version="2025")
-#
-#     if deliverable == "summary":
-#         lloyds_uk_2024_results = basic.run_summary(lloyds_uk_2024, "Lloyds UK 2024")
-#         lloyds_uk_2025_results = basic.run_summary(lloyds_uk_2025, "Lloyds UK 2025")
-#         lloyds_can_2024_results = basic.run_summary(lloyds_can_2024, "Lloyds Canada 2024")
-#         lloyds_can_2025_results = basic.run_summary(lloyds_can_2025, "Lloyds Canada 2025")
-#     else:
-#         lloyds_uk_2024_results = basic.run_error_log(lloyds_uk_2024, "Lloyds UK 2024")
-#         lloyds_uk_2025_results = basic.run_error_log(lloyds_uk_2025, "Lloyds UK 2025")
-#         lloyds_can_2024_results = basic.run_error_log(lloyds_can_2024, "Lloyds Canada 2024")
-#         lloyds_can_2025_results = basic.run_error_log(lloyds_can_2025, "Lloyds Canada 2025")
-#
-#     all_lloyds_results.append(lloyds_uk_2024_results)
-#     all_lloyds_results.append(lloyds_uk_2025_results)
-#     all_lloyds_results.append(lloyds_can_2024_results)
-#     all_lloyds_results.append(lloyds_can_2025_results)
-#
-#     # RESULTS
-#     return all_lloyds_results
+    if deliverable == "summary":
+        allianz_us_results = allianz_us_pipeline.run_summary(allianz_us, "Allianz US")
+        allianz_uk_primary_results = allianz_uk_pipeline.run_summary(allianz_uk_primary, "Allianz UK Primary")
+        allianz_uk_excess_results = allianz_uk_pipeline.run_summary(allianz_uk_excess, "Allianz UK Excess")
+        allianz_aus_results = allianz_australia_pipeline.run_summary(allianz_aus, "Allianz AUS")
+        allianz_aus_as_uk_results = allianz_uk_pipeline.run_summary(allianz_aus_as_uk, "Allianz AUS (UK)")
+        allianz_germany_results = allianz_uk_pipeline.run_summary(allianz_germany, "Allianz Germany")
+        allianz_denmark_results = allianz_uk_pipeline.run_summary(allianz_denmark, "Allianz Denmark")
+    else:
+        allianz_us_results = allianz_us_pipeline.run_error_log(allianz_us, "Allianz US")
+        allianz_uk_primary_results = allianz_uk_pipeline.run_error_log(allianz_uk_primary, "Allianz UK Primary")
+        allianz_uk_excess_results = allianz_uk_pipeline.run_error_log(allianz_uk_excess, "Allianz UK Excess")
+        allianz_aus_results = allianz_australia_pipeline.run_error_log(allianz_aus, "Allianz AUS")
+        allianz_aus_as_uk_results = allianz_uk_pipeline.run_error_log(allianz_aus_as_uk, "Allianz AUS (UK)")
+        allianz_germany_results = allianz_uk_pipeline.run_error_log(allianz_germany, "Allianz Germany")
+        allianz_denmark_results = allianz_uk_pipeline.run_error_log(allianz_denmark, "Allianz Denmark")
+
+    all_allianz_results = [
+        allianz_us_results,
+        allianz_aus_results,
+        allianz_aus_as_uk_results,
+        allianz_denmark_results,
+        allianz_germany_results,
+        allianz_uk_primary_results,
+        allianz_uk_excess_results
+    ]
+    return all_allianz_results
+
+
+def validate_ascot(f: FOLDERS, deliverable: Literal["summary", "error"]) -> pd.DataFrame:
+    """returns a DataFrame of the validations results summary for Ascot
+    """
+    ascot = f.get_ascot()
+    ascot_pipeline = BasicValidationUS()
+    if deliverable == "summary":
+        ascot_results = ascot_pipeline.run_summary(ascot, "Ascot")
+    else:
+        ascot_results = ascot_pipeline.run_error_log(ascot, "Ascot")
+    return ascot_results
+
+
+def validate_lloyds(f: FOLDERS, deliverable: Literal["summary", "error"]) -> list[pd.DataFrame]:
+    """returns a list of DataFrames of the validations results summary for Lloyds
+    """
+    basic = LloydsValidation()
+    all_lloyds_results = []
+
+    try:
+        lloyds_uk_2023 = f.get_lloyds_uk(version="2023")
+        if deliverable == "summary":
+            lloyds_uk_2023_results = basic.run_summary(lloyds_uk_2023, "Lloyds UK 2023")
+        else:
+            lloyds_uk_2023_results = basic.run_error_log(lloyds_uk_2023, "Lloyds UK 2023")
+        all_lloyds_results.append(lloyds_uk_2023_results)
+    except FileNotFoundError as fnf:
+        print(fnf.args)
+
+    try:
+        lloyds_can_2023 = f.get_lloyds_canada(version="2023")
+        if deliverable == "summary":
+            lloyds_can_2023_results = basic.run_summary(lloyds_can_2023, "Lloyds Canada 2023")
+        else:
+            lloyds_can_2023_results = basic.run_error_log(lloyds_can_2023, "Lloyds Canada 2023")
+        all_lloyds_results.append(lloyds_can_2023_results)
+    except FileNotFoundError:
+        pass
+
+    lloyds_can_2024 = f.get_lloyds_canada(version="2024")
+    lloyds_uk_2024 = f.get_lloyds_uk(version="2024")
+    lloyds_can_2025 = f.get_lloyds_canada(version="2025")
+    lloyds_uk_2025 = f.get_lloyds_uk(version="2025")
+
+    if deliverable == "summary":
+        lloyds_uk_2024_results = basic.run_summary(lloyds_uk_2024, "Lloyds UK 2024")
+        lloyds_uk_2025_results = basic.run_summary(lloyds_uk_2025, "Lloyds UK 2025")
+        lloyds_can_2024_results = basic.run_summary(lloyds_can_2024, "Lloyds Canada 2024")
+        lloyds_can_2025_results = basic.run_summary(lloyds_can_2025, "Lloyds Canada 2025")
+    else:
+        lloyds_uk_2024_results = basic.run_error_log(lloyds_uk_2024, "Lloyds UK 2024")
+        lloyds_uk_2025_results = basic.run_error_log(lloyds_uk_2025, "Lloyds UK 2025")
+        lloyds_can_2024_results = basic.run_error_log(lloyds_can_2024, "Lloyds Canada 2024")
+        lloyds_can_2025_results = basic.run_error_log(lloyds_can_2025, "Lloyds Canada 2025")
+
+    all_lloyds_results.append(lloyds_uk_2024_results)
+    all_lloyds_results.append(lloyds_uk_2025_results)
+    all_lloyds_results.append(lloyds_can_2024_results)
+    all_lloyds_results.append(lloyds_can_2025_results)
+
+    # RESULTS
+    return all_lloyds_results
 #
 #
 # def validate_lloyds_er(deliverable: Literal["summary", "error"]):
@@ -152,19 +157,19 @@
 #     return results
 #
 #
-# def validate_fortegra(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-#     """returns a DataFrame of the validations results summary for Fortegra
-#     """
-#     fortegra_df = f.get_fortegra_bdx()
-#     fortegra_df["Coalition Commission%"] = Format.convert_percentage_to_float(fortegra_df["Coalition Commission%"])
-#     fortegra_df["Fortegra %"] = Format.convert_percentage_to_float(fortegra_df["Fortegra %"])
-#
-#     fortegra = pipeline.FortegraValidation()
-#     if deliverable == "summary":
-#         results = fortegra.run_summary(fortegra_df, "Fortegra")
-#     else:
-#         results = fortegra.run_error_log(fortegra_df, "Fortegra")
-#     return results
+def validate_fortegra(f: FOLDERS, deliverable: Literal["summary", "error"]) -> pd.DataFrame:
+    """returns a DataFrame of the validations results summary for Fortegra
+    """
+    fortegra_df = f.get_fortegra_bdx()
+    fortegra_df["Coalition Commission%"] = Format.convert_percentage_to_float(fortegra_df["Coalition Commission%"])
+    fortegra_df["Fortegra %"] = Format.convert_percentage_to_float(fortegra_df["Fortegra %"])
+
+    fortegra = FortegraValidation()
+    if deliverable == "summary":
+        results = fortegra.run_summary(fortegra_df, "Fortegra")
+    else:
+        results = fortegra.run_error_log(fortegra_df, "Fortegra")
+    return results
 #
 #
 # def validate_chaucer(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
@@ -247,18 +252,18 @@
 #     return swissre_results
 #
 #
-# def validate_vantage(deliverable: Literal["summary", "error"]) -> pd.DataFrame:
-#     """returns a DataFrame of the validations results summary for Vantage
-#     """
-#     # DATAFRAME PULL AND FORMATTING
-#     vantage_df = f.get_vantage_bdx()
-#     vantage_df["Coalition Commission %"] = Format.convert_percentage_to_float(vantage_df["Coalition Commission %"])
-#     vantage_df["Vantage Quota Share %"] = Format.convert_percentage_to_float(vantage_df["Vantage Quota Share %"])
-#
-#     # VALIDATION AND CHECKS
-#     vantage = pipeline.VantageValidation()
-#     if deliverable == "summary":
-#         results = vantage.run_summary(vantage_df, "Vantage")
-#     else:
-#         results = vantage.run_error_log(vantage_df, "Vantage")
-#     return results
+def validate_vantage(folder: FOLDERS, deliverable: Literal["summary", "error"]) -> pd.DataFrame:
+    """returns a DataFrame of the validations results summary for Vantage
+    """
+    # DATAFRAME PULL AND FORMATTING
+    vantage_df = folder.get_vantage_bdx()
+    vantage_df["Coalition Commission %"] = Format.convert_percentage_to_float(vantage_df["Coalition Commission %"])
+    vantage_df["Vantage Quota Share %"] = Format.convert_percentage_to_float(vantage_df["Vantage Quota Share %"])
+
+    # VALIDATION AND CHECKS
+    vantage = VantageValidation()
+    if deliverable == "summary":
+        results = vantage.run_summary(vantage_df, "Vantage")
+    else:
+        results = vantage.run_error_log(vantage_df, "Vantage")
+    return results

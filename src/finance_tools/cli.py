@@ -8,9 +8,8 @@ from rich.console import Console
 from typing_extensions import Annotated
 
 from finance_tools.core.checks import find_term_extension_transaction
-from finance_tools.deliverables import export_masterfile_reported, swissre_doc_namer
+from finance_tools.deliverables import export_masterfile_reported, swissre_doc_namer, download_validation_log
 from finance_tools.io.directory_handler import FOLDERS
-from finance_tools.pipeline_v2.validation_object import DailyValidation
 from finance_tools.tasks.ad_hoc import current_reported, compare_to_itd
 
 app = typer.Typer()
@@ -21,10 +20,10 @@ f = FOLDERS()
 ############################
 # BDX SUPPORT
 ############################
-# @app.command()
-# def validate_bdx():
-#     """Function for running the validations log for available BDX reports"""
-#     download_validation_log(f)
+@app.command()
+def validate_bdx():
+    """Function for running the validations log for available BDX reports"""
+    download_validation_log(f)
 
 
 @app.command()
