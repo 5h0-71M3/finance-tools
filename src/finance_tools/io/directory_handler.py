@@ -235,6 +235,7 @@ class FOLDERS(Directory):
         """
         if previous_master:
             print(f"Pulled from previous Master {self.PREVIOUS_MASTER_FOLDER}")
+            print(self.PREVIOUS_MASTER_FOLDER.path)
             return self.PREVIOUS_MASTER_FOLDER.open_recent("MasterFile-Cyber", sheet_name=self._master_tab_mapping[tab])
         return self.MASTER_FOLDER.open_recent("MasterFile-Cyber", sheet_name=self._master_tab_mapping[tab])
 
