@@ -144,15 +144,26 @@ def export_masterfile_reported(
     """
 
     # [Part 0]: set up the variables
-    if curr_master is None:
-        curr_master = f.get_cyber_master(tab="master")
-    elif isinstance(curr_master, str):
-        if curr_master.lower() == 'cyber':
+    try:
+        if curr_master is None:
             curr_master = f.get_cyber_master(tab="master")
+        elif isinstance(curr_master, str):
+            if curr_master.lower() == 'cyber':
+                curr_master = f.get_cyber_master(tab="master")
+            else:
+                curr_master = f.get_mpl_master(tab="master")
         else:
-            curr_master = f.get_mpl_master(tab="master")
-    else:
-        curr_master = curr_master.copy()
+            curr_master = curr_master.copy()
+    except FileNotFoundError:
+        if curr_master is None:
+            curr_master = f.get_cyber_master(tab="master", previous_master=True)
+        elif isinstance(curr_master, str):
+            if curr_master.lower() == 'cyber':
+                curr_master = f.get_cyber_master(tab="master", previous_master=True)
+            else:
+                curr_master = f.get_mpl_master(tab="master", previous_master=True)
+        else:
+            curr_master = curr_master.copy()
 
     if year is None:
         year = _end_of_previous_month.year

@@ -13,6 +13,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "pandas",
     "pgeocode>=0.5.0",
+    "pipeui",
     "typer>=0.19.2",
 ]
 
@@ -30,3 +31,4 @@ members = [
 
 [tool.uv.sources]
 dirlin = { git = "https://github.com/shotmendoza/directory-handler", rev = "retro" }
+pipeui = { git = "https://github.com/mendozasho/pipeui" }
