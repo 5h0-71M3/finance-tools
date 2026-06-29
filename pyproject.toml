@@ -14,6 +14,7 @@ dependencies = [
     "pandas",
     "pgeocode>=0.5.0",
     "pipeui",
+    "python-calamine>=0.2.3",
     "typer>=0.19.2",
 ]
 

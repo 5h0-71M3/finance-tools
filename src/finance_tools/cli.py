@@ -7,6 +7,8 @@ from dirlin import Folder
 from rich.console import Console
 from typing_extensions import Annotated
 
+from finance_tools.cash_app import run_cash_application
+from finance_tools.cash_app.pipeline import write_result
 from finance_tools.core.checks import find_term_extension_transaction
 from finance_tools.deliverables import export_masterfile_reported, swissre_doc_namer, download_validation_log
 from finance_tools.io.directory_handler import FOLDERS
@@ -89,6 +91,31 @@ def generate_arch_upload(limit: int = 8):
     """Generates the reported upload for Netsuite. NEED: Arch Policy Number email files in DOWNLOADS folder.
     """
     f.download_arch_number_upload(limit=limit)
+
+
+############################
+# CASH APPLICATION
+############################
+@app.command()
+def apply_cash(
+        bank: Annotated[str, typer.Option("--bank", "-b", help="filename pattern for the bank workbook")] = "Bank Data",
+        ar: Annotated[str, typer.Option("--ar", "-a", help="filename pattern for the open AR report")] = "Open AR",
+):
+    """Match bank receipts to open AR invoices and write the NetSuite payment upload.
+
+    Reads the most recent matching files from the DOWNLOADS folder: a bank workbook
+    (with `Bank Data` + `Subsidiary Details` tabs) and an open AR report. Only the
+    easy 1:1 matches are applied; receipts with multiple or no candidate invoices
+    are written to a separate review file for a future, more complex pass.
+    """
+    bank_path = f.DOWNLOADS._find_recent_file(bank, days=3650)
+    ar_path = f.DOWNLOADS._find_recent_file(ar, days=3650)
+
+    result = run_cash_application(bank_path, ar_path)
+    upload_path = write_result(result, f.DOWNLOADS.path)
+
+    console.print(result.summary())
+    console.print(f"[green]Wrote upload:[/green] {upload_path}")
 
 
 ############################
