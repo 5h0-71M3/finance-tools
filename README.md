@@ -80,17 +80,6 @@ clearing a score threshold *and* beating the runner-up by a margin. A final
 guard sends back to review any two receipts that fuzzily resolve to the same
 invoice (one invoice can't absorb both).
 
-### Idempotency
-
-The upload's **External ID / Payment #** is a `UUID5` keyed on the specific
-invoice, amount, account, and date — deterministic, so re-running never
-double-creates a payment, yet distinct for two receipts that share a match key
-but pay different invoices.
-
-> The bank file's *Uploaded Remittance Advice* column is the human answer key.
-> It is dropped on read so the automation never sees it — matches must be
-> derived independently.
-
 ## Inputs
 
 - **Bank workbook** — a `Bank Data` tab (receipts) and a `Subsidiary Details`
