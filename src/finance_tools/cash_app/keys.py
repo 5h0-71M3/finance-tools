@@ -1,16 +1,23 @@
 """The deterministic match key tying a bank receipt to an open invoice.
 
-The key is a UUID5 computed *independently* from each document out of the few
-fields the two genuinely share: the NetSuite subsidiary, the ISO currency, and
-the money amount. Because UUID5 is deterministic, the bank side and the AR side
-arrive at the *same* UUID whenever they describe the same payment — so the
-match is a plain equality join, with no fuzzy logic or free-text parsing.
+The key is a UUID5 computed *independently* from each document out of the fields
+the two genuinely share: the NetSuite subsidiary, the ISO currency, the money
+amount, and the **agency**. Because UUID5 is deterministic, the bank side and
+the AR side arrive at the *same* UUID whenever they describe the same payment —
+so the match is a plain equality join.
 
-Which fields seed the key is the lever for how aggressive the automation is.
-The current seed (subsidiary + currency + amount) is deliberately
-conservative: it only auto-applies when the amount is unique within a
-subsidiary's currency. Adding fields (e.g. a parsed agency) would resolve more
-of today's ambiguous receipts in a future pass.
+The catch is the agency: the AR side has it verbatim (the invoice's ``Name``),
+but the bank side only has the free-text ``Description``. So the agency is the
+one field that is *fuzzy-resolved* first (see
+:mod:`~finance_tools.cash_app.payer`) and then fed into the key as an exact
+component. Everything downstream of that resolution is a deterministic equality
+join; the fuzzy step's confidence rides alongside the match.
+
+Folding the agency into the seed is what makes the key unique when several
+invoices share an amount — it is the lever the earlier amount-only key lacked.
+The trade-off is recall: a receipt whose agency cannot be resolved from its
+description can no longer be keyed at all (it goes to review), even when its
+amount happens to be unique.
 """
 from __future__ import annotations
 
@@ -23,18 +30,49 @@ import uuid
 CASH_APP_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "coalition.cash-application.v1")
 
 
-def build_match_key(subsidiary: int, currency: str, amount: float) -> str:
-    """Compute the UUID5 *match key* for one (subsidiary, currency, amount) tuple.
+def normalize_entity(entity: str) -> str:
+    """Fold an agency/insured name to the canonical form used inside the key seed.
 
-    This is the join key tying a bank receipt to open invoices; it is amount-
-    level, so several invoices can share it (those are the ambiguous cases).
+    Both sides must apply the *same* transform or their UUIDs will not line up,
+    so this is deliberately simple: upper-case and collapse whitespace. Callers
+    pass the already-cleaned name (the bank side's is the *resolved* AR entity),
+    so the two sides feed identical text.
+    """
+    return " ".join(str(entity).split()).upper()
+
+
+def build_match_key(
+    subsidiary: int,
+    currency: str,
+    amount: float,
+    entity: str,
+    *,
+    dimension: str = "agency",
+) -> str:
+    """Compute the UUID5 *match key* for one payment coordinate.
+
+    The entity (an agency or an insured name) makes the key far more specific
+    than the old amount-only key: two invoices of equal amount in one
+    subsidiary/currency no longer collide unless they also share that entity.
+
+    The ``dimension`` label is part of the seed so the agency key and the
+    insured key live in *separate namespaces*: a bank receipt's agency-UUID can
+    only ever match an invoice's agency-UUID, never its insured-UUID, even if an
+    agency and an insured happen to share a name.
 
     :param subsidiary: NetSuite subsidiary internal id.
     :param currency: ISO currency code (see :mod:`~finance_tools.cash_app.reference`).
     :param amount: payment / open-balance amount; rounded to cents so float
         noise on either side cannot break the join.
+    :param entity: the agency or insured name — verbatim on the AR side,
+        fuzzy-resolved from the bank description on the bank side.
+    :param dimension: which identifier ``entity`` is (``"agency"``, ``"insured"``,
+        …); namespaces the key.
     """
-    token = f"{int(subsidiary)}|{currency.upper()}|{round(float(amount), 2):.2f}"
+    token = (
+        f"{dimension.lower()}|{int(subsidiary)}|{currency.upper()}"
+        f"|{round(float(amount), 2):.2f}|{normalize_entity(entity)}"
+    )
     return str(uuid.uuid5(CASH_APP_NAMESPACE, token))
 
 
