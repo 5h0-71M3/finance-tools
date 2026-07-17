@@ -18,3 +18,5 @@ pipeui.db
 .idea/
 .vscode/
 .DS_Store
+
+pipeui.db.bak
