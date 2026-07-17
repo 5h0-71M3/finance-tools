@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 
 import pandas as pd
@@ -36,27 +34,25 @@ def transaction_id_is_nan(external_id: pd.Series) -> pd.Series[bool]:
     return pd.Series(results)
 
 
-def validate_carrier_bound_premium(
-    tbp: float,
-    carrier_bound_premium: float,
-    carrier_quota_share: float,
-) -> bool:
+def validate_carrier_bound_premium(df: pd.DataFrame) -> pd.Series[bool]:
     """Expected formula for Carrier Bound Premium => TBP x Quota Share.
 
-    :param tbp: the total premium of the policy
-    :param carrier_bound_premium: the carrier premium amount
-    :param carrier_quota_share: the quota split of the carrier
+    Multi-column check: pipeui binds only one column per validation, so a row-wise
+    check across several columns takes the whole table and reads the columns by name
+    (the legacy VantageValidation alias mapping). Column names:
+      - tbp                    -> "Total Bound Premium"   (BasicValidation alias)
+      - carrier_bound_premium  -> "Vantage Bound Premium"  (VantageValidation alias)
+      - carrier_quota_share    -> "Vantage Quota Share"    (source column; the legacy
+                                   alias was "Vantage Quota Share %", absent here)
 
-    :return: pass / fail
+    :return: pass / fail per row
     """
     option_variance_cap: float = .02
-    try:
-        expected_carrier_bound_premium = round(tbp * carrier_quota_share, 2)
-    except TypeError as te:
-        raise TypeError(f"{tbp}, {carrier_quota_share}: {te}")
-    if abs(expected_carrier_bound_premium - carrier_bound_premium) > option_variance_cap:
-        return False
-    return True
+    expected_carrier_bound_premium = (
+        df["Total Bound Premium"] * df["Vantage Quota Share"]
+    ).round(2)
+    variance = (expected_carrier_bound_premium - df["Vantage Bound Premium"]).abs()
+    return variance <= option_variance_cap
 
 
 def validate_carrier_net_premium(

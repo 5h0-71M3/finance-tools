@@ -406,7 +406,7 @@ wheels = [
 [[package]]
 name = "pipeui"
 version = "0.1.0"
-source = { git = "https://github.com/mendozasho/pipeui#7dff429ac7158a791e6495ca27e3e02064328a61" }
+source = { git = "https://github.com/mendozasho/pipeui#af31ae55c4dff5841e5e1e56352fde28b9414142" }
 dependencies = [
     { name = "duckdb" },
     { name = "fastapi" },
