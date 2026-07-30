@@ -18,6 +18,39 @@ f = FOLDERS()
 
 
 ############################
+# PIPEUI
+############################
+@app.command()
+def pipeui():
+    """Launch the PipeUI server (data-pipeline UI) using the repo's pipeui.config.json."""
+    import os
+    from pathlib import Path
+
+    def _find_project_dir() -> Path | None:
+        # Search upward from CWD first (user standing in the repo), then from the
+        # installed package location (editable install -> repo src/), for the dir
+        # that owns pipeui.config.json.
+        for start in (Path.cwd(), Path(__file__).resolve().parent):
+            for d in (start, *start.parents):
+                if (d / "pipeui.config.json").exists():
+                    return d
+        return None
+
+    project_dir = _find_project_dir()
+    if project_dir is None:
+        console.print(
+            "[red]Could not locate pipeui.config.json.[/red] "
+            "Run `pipeui init` in the finance-tools repo root first."
+        )
+        raise typer.Exit(1)
+
+    os.chdir(project_dir)  # pipeui reads config + db relative to CWD; reload subprocess inherits it
+    from pipeui.app.cli import cmd_start  # lazy: pulls in uvicorn only when launching
+    console.print(f"[green]Starting PipeUI[/green] (project: {project_dir})")
+    cmd_start()
+
+
+############################
 # BDX SUPPORT
 ############################
 @app.command()
