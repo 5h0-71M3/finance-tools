@@ -16,6 +16,14 @@ from finance_tools.pipeline_v2.validations.reports import validate_vantage, vali
 
 from finance_tools.tasks.masterfile.masterfile_validation import infer_reported_date
 
+def _convert_date_string_to_folder():
+    """used in conjuntion with export_masterfile_reported, will take a user date argument `2026.05`
+    and converts it into a tuple that can be used with the export function.
+
+    :return:
+    """
+    ...
+
 
 def download_validation_log(f: FOLDERS):
     """Generates the summary sheet for all available Carriers in the Account Current folder

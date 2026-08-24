@@ -11,7 +11,6 @@ from finance_tools.core.checks import find_term_extension_transaction
 from finance_tools.deliverables import export_masterfile_reported, swissre_doc_namer, download_validation_log
 from finance_tools.io.directory_handler import FOLDERS
 from finance_tools.tasks.ad_hoc import current_reported, compare_to_itd
-
 app = typer.Typer()
 console = Console()
 f = FOLDERS()

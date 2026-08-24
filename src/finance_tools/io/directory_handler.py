@@ -236,8 +236,8 @@ class FOLDERS(Directory):
         if previous_master:
             print(f"Pulled from previous Master {self.PREVIOUS_MASTER_FOLDER}")
             print(self.PREVIOUS_MASTER_FOLDER.path)
-            return self.PREVIOUS_MASTER_FOLDER.open_recent("MasterFile-Cyber", sheet_name=self._master_tab_mapping[tab])
-        return self.MASTER_FOLDER.open_recent("MasterFile-Cyber", sheet_name=self._master_tab_mapping[tab])
+            return self.PREVIOUS_MASTER_FOLDER.open_recent("Masterfile-Cyber", sheet_name=self._master_tab_mapping[tab])
+        return self.MASTER_FOLDER.open_recent("Masterfile-Cyber", sheet_name=self._master_tab_mapping[tab])
 
     def get_mpl_master(
             self,
@@ -252,8 +252,8 @@ class FOLDERS(Directory):
         """
         if previous_master:
             print(f"Pulled from previous Master {self.PREVIOUS_MASTER_FOLDER}")
-            return self.PREVIOUS_MASTER_FOLDER.open_recent("MasterFile-Cyber", sheet_name=self._master_tab_mapping[tab])
-        return self.MASTER_FOLDER.open_recent("MasterFile-MPL", sheet_name=self._master_tab_mapping[tab])
+            return self.PREVIOUS_MASTER_FOLDER.open_recent("Masterfile-MPL", sheet_name=self._master_tab_mapping[tab])
+        return self.MASTER_FOLDER.open_recent("Masterfile-MPL", sheet_name=self._master_tab_mapping[tab])
 
     def get_allianz_us(self) -> pd.DataFrame:
         """quick function for getting the current Allianz US report from the Account Current Folder (production). NOTE NOT FROM DOWNLOADS"""
