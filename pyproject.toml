@@ -31,4 +31,4 @@ members = [
 
 [tool.uv.sources]
 dirlin = { git = "https://github.com/shotmendoza/directory-handler", rev = "retro" }
-pipeui = { git = "https://github.com/mendozasho/pipeui" }
+pipeui = { path = "../pipeui", editable = true }

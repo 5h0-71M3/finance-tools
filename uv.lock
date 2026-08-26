@@ -194,7 +194,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pandas" },
     { name = "pgeocode", specifier = ">=0.5.0" },
-    { name = "pipeui", git = "https://github.com/mendozasho/pipeui" },
+    { name = "pipeui", editable = "../pipeui" },
     { name = "typer", specifier = ">=0.19.2" },
 ]
 
@@ -406,7 +406,7 @@ wheels = [
 [[package]]
 name = "pipeui"
 version = "0.1.0"
-source = { git = "https://github.com/mendozasho/pipeui#b25b1f72b20b10b733afee59ea119ba2576c0c4d" }
+source = { editable = "../pipeui" }
 dependencies = [
     { name = "duckdb" },
     { name = "fastapi" },
@@ -416,6 +416,27 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-multipart" },
     { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "duckdb", specifier = ">=0.10" },
+    { name = "fastapi", specifier = ">=0.110" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27" },
+    { name = "openpyxl", specifier = ">=3.1" },
+    { name = "pandas", specifier = ">=2.0" },
+    { name = "pyarrow", specifier = ">=14.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
+    { name = "uvicorn", specifier = ">=0.29" },
+]
+provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "pytest", specifier = ">=9.0.3" },
 ]
 
 [[package]]
