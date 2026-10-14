@@ -3,6 +3,7 @@ from typing import Literal
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from dirlin import Folder
 
 from finance_tools.core.reports.policy_list import (
     _quota_share_headers,
@@ -16,13 +17,37 @@ from finance_tools.pipeline_v2.validations.reports import validate_vantage, vali
 
 from finance_tools.tasks.masterfile.masterfile_validation import infer_reported_date
 
-def _convert_date_string_to_folder():
+def _convert_date_string_to_folder(date_string: str) -> tuple[int, int]:
     """used in conjuntion with export_masterfile_reported, will take a user date argument `2026.05`
     and converts it into a tuple that can be used with the export function.
 
-    :return:
+    Accepts `2026.05`, `2026-05`, `2026/5`, and `202605`.
+
+    :param date_string: the masterfile month, pointing at a folder in `Account Current`
+    :return: a (year, month) tuple
     """
-    ...
+    _expected = f"expected a date string like `2026.05`, got {date_string!r}."
+    if not isinstance(date_string, str):
+        raise ValueError(_expected)
+
+    cleaned = date_string.strip().replace("-", ".").replace("/", ".")
+    if "." in cleaned:
+        parts = [part for part in cleaned.split(".") if part]
+        if len(parts) != 2:
+            raise ValueError(_expected)
+        _year, _month = parts
+    elif len(cleaned) == 6:  # the `202605` shorthand
+        _year, _month = cleaned[:4], cleaned[4:]
+    else:
+        raise ValueError(_expected)
+
+    if len(_year) != 4 or not _year.isdigit() or not _month.isdigit():
+        raise ValueError(_expected)
+
+    year, month = int(_year), int(_month)
+    if not 1 <= month <= 12:
+        raise ValueError(f"{month} is not a valid month. {_expected}")
+    return year, month
 
 
 def download_validation_log(f: FOLDERS):
@@ -129,6 +154,7 @@ def export_masterfile_reported(
         curr_master: Literal['cyber', 'mpl'] | pd.DataFrame | None = None,
         year: int | None = None,
         month: int | None = None,
+        period: str | None = None,
 ) -> pd.DataFrame:
     """creates the upload file for the transactions your reported for the month on
     Netsuite, based on the Master File
@@ -137,6 +163,8 @@ def export_masterfile_reported(
     :param curr_master: the Master File you want to create the file from
     :param year: the year of the reporting. Defaults to previous month's year
     :param month: the month of the reporting. Defaults to previous month
+    :param period: the masterfile month (`2026.05`) to pull from, so you can re-run a closed month.
+        Defaults to the `MASTER_FOLDER` month the FOLDERS object resolved.
     :return: a Dataframe consisting of which carriers reported and when
     """
     _end_of_previous_month = date.today() + relativedelta(day=31)
@@ -152,26 +180,58 @@ def export_masterfile_reported(
     """
 
     # [Part 0]: set up the variables
-    try:
-        if curr_master is None:
-            curr_master = f.get_cyber_master(tab="master")
-        elif isinstance(curr_master, str):
-            if curr_master.lower() == 'cyber':
+    if period is not None:
+        # [0.1]: the user gave us an explicit masterfile month, so we go straight to that folder.
+        # ===note=== no `previous_master` fallback here - we'd rather fail than quietly report on another month
+        _folder_year, _folder_month = _convert_date_string_to_folder(period)
+        _master_folder_path = f.ACCOUNT_CURRENT / f"{_folder_year:04d}-{_folder_month:02d}"
+        try:
+            _master_folder = Folder(_master_folder_path)
+        except ValueError:
+            raise ValueError(f"No masterfile folder for {period}. Expected {_master_folder_path}.")
+
+        if isinstance(curr_master, pd.DataFrame):
+            curr_master = curr_master.copy()
+        else:
+            if isinstance(curr_master, str) and curr_master.lower() != 'cyber':
+                _filename_pattern = "Masterfile-MPL"
+            else:
+                _filename_pattern = "Masterfile-Cyber"
+            # `open_recent` filters on modified time (30 days by default), so a closed month needs a
+            # window wide enough to reach back past the start of that month
+            _lookback_days = max(30, (date.today() - date(_folder_year, _folder_month, 1)).days + 60)
+            print(f"Pulled from {_master_folder_path}")
+            curr_master = _master_folder.open_recent(
+                _filename_pattern, days=_lookback_days, sheet_name="Master"
+            )
+
+        # [0.2]: the reported dates land in the month after the masterfile month
+        _reported_month = date(_folder_year, _folder_month, 1) + relativedelta(months=1)
+        if year is None:
+            year = _reported_month.year
+        if month is None:
+            month = _reported_month.month
+    else:
+        try:
+            if curr_master is None:
                 curr_master = f.get_cyber_master(tab="master")
+            elif isinstance(curr_master, str):
+                if curr_master.lower() == 'cyber':
+                    curr_master = f.get_cyber_master(tab="master")
+                else:
+                    curr_master = f.get_mpl_master(tab="master")
             else:
-                curr_master = f.get_mpl_master(tab="master")
-        else:
-            curr_master = curr_master.copy()
-    except FileNotFoundError:
-        if curr_master is None:
-            curr_master = f.get_cyber_master(tab="master", previous_master=True)
-        elif isinstance(curr_master, str):
-            if curr_master.lower() == 'cyber':
+                curr_master = curr_master.copy()
+        except FileNotFoundError:
+            if curr_master is None:
                 curr_master = f.get_cyber_master(tab="master", previous_master=True)
+            elif isinstance(curr_master, str):
+                if curr_master.lower() == 'cyber':
+                    curr_master = f.get_cyber_master(tab="master", previous_master=True)
+                else:
+                    curr_master = f.get_mpl_master(tab="master", previous_master=True)
             else:
-                curr_master = f.get_mpl_master(tab="master", previous_master=True)
-        else:
-            curr_master = curr_master.copy()
+                curr_master = curr_master.copy()
 
     if year is None:
         year = _end_of_previous_month.year
