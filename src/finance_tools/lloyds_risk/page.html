@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lloyds Risk BDX</title>
+<style>
+  :root {
+    --bg: #f6f6f4; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e3e2dd;
+    --accent: #2f5bd3; --accent-ink: #ffffff; --ok: #1f7a4d; --warn: #9a5b00; --warn-bg: #fdf3e2;
+    --err: #b42318; --err-bg: #fdecea; --drop: #f0f3fc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615; --card: #1f1f1d; --ink: #ecebe6; --muted: #9a9993; --line: #34332f;
+      --accent: #7d9cf0; --accent-ink: #10131c; --ok: #5cc28e; --warn: #f0b45a; --warn-bg: #2d2416;
+      --err: #f28b82; --err-bg: #2f1a18; --drop: #1d2233;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 650; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+       margin: 0 0 12px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 16px; cursor: pointer;
+          transition: border-color .15s, background .15s; min-height: 92px; }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--drop); }
+  .drop.filled { border-style: solid; border-color: var(--ok); }
+  .drop .label { font-weight: 600; }
+  .drop .file { color: var(--muted); word-break: break-all; margin-top: 4px; }
+  .drop.filled .file { color: var(--ok); }
+  .old-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .old-row:first-of-type { border-top: 0; }
+  .old-row .umr { width: 150px; flex: none; font-weight: 600; }
+  .old-row .file { flex: 1; color: var(--muted); word-break: break-all; }
+  .old-row .file.missing { color: var(--err); }
+  .old-row .file.override { color: var(--ok); }
+  button { font: inherit; border-radius: 7px; border: 1px solid var(--line); background: var(--card);
+           color: var(--ink); padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+                   padding: 10px 20px; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .actions { display: flex; align-items: center; gap: 14px; }
+  .status { color: var(--muted); }
+  .banner { border-radius: 8px; padding: 10px 14px; margin: 10px 0 0; }
+  .banner.warn { background: var(--warn-bg); color: var(--warn); }
+  .banner.err { background: var(--err-bg); color: var(--err); }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 5px 0; border-top: 1px solid var(--line); }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:first-child td { border-top: 0; }
+  .files a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .files a:hover { text-decoration: underline; }
+  .hidden { display: none; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lloyds Risk BDX</h1>
+  <p class="sub">Day 5 deliverables. Each policy stays on the UMR it was sent under last month.
+    Output folder: <span class="mono" id="out-dir">…</span></p>
+
+  <section class="card">
+    <h2>1 · This month's Looker downloads</h2>
+    <div class="grid" id="new-slots"></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Last month's sent files</h2>
+    <p class="sub" style="margin-bottom:8px">Pre-filled from <span class="mono" id="old-dir">…</span></p>
+    <div id="old-slots"></div>
+  </section>
+
+  <section class="card">
+    <div class="actions">
+      <button class="primary" id="build" disabled>Build deliverables</button>
+      <span class="status" id="status">Add both Looker downloads to continue.</span>
+    </div>
+    <div id="error" class="banner err hidden"></div>
+  </section>
+
+  <div id="results" class="hidden">
+    <section class="card files">
+      <div class="actions" style="justify-content:space-between;margin-bottom:8px">
+        <h2 style="margin:0">Written files</h2>
+        <button id="reveal">Open folder</button>
+      </div>
+      <table id="file-table"></table>
+    </section>
+    <div class="grid" id="region-cards"></div>
+  </div>
+</main>
+
+<script>
+const files = {};          // form field -> File
+let defaults = null;
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n.toLocaleString();
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function picker(field, onPick) {
+  const input = document.createElement("input");
+  input.type = "file"; input.accept = ".xlsx,.xls,.csv";
+  input.onchange = () => { if (input.files[0]) { files[field] = input.files[0]; onPick(); } };
+  return input;
+}
+
+function newSlot(region) {
+  const field = `new_${region.name}`;
+  const el = document.createElement("div");
+  el.className = "drop";
+  const render = () => {
+    const f = files[field];
+    el.classList.toggle("filled", !!f);
+    el.innerHTML = `<div class="label">${esc(region.name)} All</div>
+      <div class="file">${f ? esc(f.name) : "Drop the Looker download here, or click to choose"}</div>`;
+    el.appendChild(input);
+    refresh();
+  };
+  const input = picker(field, render);
+  el.onclick = () => input.click();
+  el.ondragover = (e) => { e.preventDefault(); el.classList.add("over"); };
+  el.ondragleave = () => el.classList.remove("over");
+  el.ondrop = (e) => {
+    e.preventDefault(); el.classList.remove("over");
+    if (e.dataTransfer.files[0]) { files[field] = e.dataTransfer.files[0]; render(); }
+  };
+  render();
+  return el;
+}
+
+function oldSlot(umr) {
+  const field = `old_${umr}`;
+  const row = document.createElement("div");
+  row.className = "old-row";
+  const render = () => {
+    const f = files[field], d = defaults.old_files[umr];
+    const cls = f ? "override" : d ? "" : "missing";
+    const text = f ? `${f.name} (uploaded)` : d ? d : "Not found — choose a file";
+    row.innerHTML = `<span class="umr mono">${esc(umr)}</span><span class="file ${cls}">${esc(text)}</span>`;
+    const btn = document.createElement("button");
+    btn.textContent = f || d ? "Replace" : "Choose";
+    btn.onclick = () => input.click();
+    row.append(btn, input);
+    refresh();
+  };
+  const input = picker(field, render);
+  render();
+  return row;
+}
+
+function missing() {
+  const out = [];
+  for (const r of defaults.regions) {
+    if (!files[`new_${r.name}`]) out.push(`${r.name} Looker download`);
+    for (const u of r.umrs) if (!files[`old_${u}`] && !defaults.old_files[u]) out.push(`last month's ${u}`);
+  }
+  return out;
+}
+
+function refresh() {
+  if (!defaults) return;
+  const m = missing();
+  $("build").disabled = m.length > 0;
+  $("status").textContent = m.length ? `Still needed: ${m.join(", ")}.` : "Ready.";
+}
+
+function regionCard(r) {
+  const [u24, u25] = Object.keys(r.files);
+  const rows = [
+    [`Rows in ${u24}`, r.files[u24]],
+    [`Rows in ${u25}`, r.files[u25]],
+    [`Kept UMR from last month's ${u24.slice(-4)}`, r.from_old_24],
+    [`Kept UMR from last month's ${u25.slice(-4)}`, r.from_old_25],
+    ["New to the BDX (Looker UMR used)", r.from_looker],
+    ["Looker UMR overridden to stay consistent", r.umr_changed_by_carry_forward],
+    ["Policies sent last month, not in new download", r.dropped_from_old],
+  ];
+  let warn = "";
+  for (const [umr, n] of Object.entries(r.unexpected_umrs))
+    warn += `<div class="banner warn">${fmt(n)} rows carry UMR <b class="mono">${esc(umr)}</b> (inherited from last month) and were placed in the ${esc(u25)} file, as in previous sends.</div>`;
+  return `<section class="card"><h2>${esc(r.region)}</h2><table>${
+    rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(v)}</td></tr>`).join("")
+  }</table>${warn}</section>`;
+}
+
+async function build() {
+  const fd = new FormData();
+  for (const [k, f] of Object.entries(files)) fd.append(k, f);
+  $("build").disabled = true; $("error").classList.add("hidden");
+  $("status").textContent = "Building… (large files take ~30s)";
+  try {
+    const res = await fetch("/api/build", { method: "POST", body: fd });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.detail || res.statusText);
+    $("file-table").innerHTML = body.files.map((f) =>
+      `<tr><td><a href="/api/files/${encodeURIComponent(f.name)}">${esc(f.name)}</a></td>
+       <td>${esc(f.sheet)}</td><td class="n">${fmt(f.rows)} rows</td></tr>`).join("");
+    $("region-cards").innerHTML = body.regions.map(regionCard).join("");
+    $("results").classList.remove("hidden");
+    $("status").textContent = `Done — 4 files saved to ${body.out_dir}`;
+  } catch (e) {
+    $("error").textContent = e.message; $("error").classList.remove("hidden");
+    $("status").textContent = "Build failed.";
+  } finally {
+    $("build").disabled = missing().length > 0;
+  }
+}
+
+(async () => {
+  defaults = await (await fetch("/api/defaults")).json();
+  $("out-dir").textContent = defaults.out_dir;
+  $("old-dir").textContent = defaults.old_dir;
+  for (const r of defaults.regions) $("new-slots").appendChild(newSlot(r));
+  for (const r of defaults.regions) for (const u of r.umrs) $("old-slots").appendChild(oldSlot(u));
+  $("build").onclick = build;
+  $("reveal").onclick = () => fetch("/api/reveal", { method: "POST" });
+  refresh();
+})();
+</script>
+</body>
+</html>

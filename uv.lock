@@ -180,24 +180,34 @@ source = { editable = "." }
 dependencies = [
     { name = "dirlin" },
     { name = "duckdb" },
+    { name = "fastapi" },
     { name = "jinja2" },
+    { name = "openpyxl" },
     { name = "pandas" },
     { name = "pgeocode" },
     { name = "pipeui" },
     { name = "python-calamine" },
+    { name = "python-multipart" },
+    { name = "requests" },
     { name = "typer" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "dirlin", git = "https://github.com/shotmendoza/directory-handler?rev=retro" },
     { name = "duckdb", specifier = ">=1.4.1" },
+    { name = "fastapi", specifier = ">=0.137.1" },
     { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas" },
     { name = "pgeocode", specifier = ">=0.5.0" },
     { name = "pipeui", editable = "../pipeui" },
     { name = "python-calamine", specifier = "<0.8" },
+    { name = "python-multipart", specifier = ">=0.0.32" },
+    { name = "requests", specifier = ">=2.32" },
     { name = "typer", specifier = ">=0.19.2" },
+    { name = "uvicorn", specifier = ">=0.49.0" },
 ]
 
 [[package]]
