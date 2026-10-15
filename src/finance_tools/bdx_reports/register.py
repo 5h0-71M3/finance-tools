@@ -207,6 +207,10 @@ class PipeuiClient:
             raise RuntimeError(f"Couldn't attach {builtin_type} to {source_id}: {result}")
         return result
 
+    def detach_step(self, source_id: str, source_function_map_id: str) -> None:
+        """Removes a function / set step (``DELETE /pipelines/{id}/steps/{map id}``)."""
+        requests.delete(self._url(f"/pipelines/{source_id}/steps/{source_function_map_id}"), timeout=60).raise_for_status()
+
     def detach_builtin(self, source_id: str, step_id: str) -> None:
         requests.delete(self._url(f"/sources/{source_id}/attach-builtin/{step_id}"), timeout=60).raise_for_status()
 

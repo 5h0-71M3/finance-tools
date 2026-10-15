@@ -195,8 +195,9 @@ def mpl_premium_by_policy(df: pd.DataFrame) -> pd.DataFrame:
 def allianz_master_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Master tab of the month's Cyber Masterfile → the columns the Allianz US pipeline needs,
     prefixed: the gate (quota share, subsidiary), the bookroll flag (policy version) and the
-    Multi-National split. It also carries Vantage's quota share, for the Vantage report's gate
-    (``vantage_master_gate``) — this is the Master report's only step, so the join sees nothing else.
+    Multi-National split. It also carries Vantage's and MSIG's quota shares, for those reports' gates
+    (``vantage_master_gate``, ``msig_master_gate``) — this is the Master report's only step, so the
+    join sees nothing else.
 
     The report loads with "replace", so it only holds this month's Master. A legacy ``Master Month``
     column (from the old CSV extract) is still honoured — only the newest month is kept, so a
@@ -212,6 +213,7 @@ def allianz_master_columns(df: pd.DataFrame) -> pd.DataFrame:
         "Master Policy Version": df["Policy Version"],
         "Master Multi-National": df["Multi-National Policy"],
         "Master Vantage Quota Share": _num(df["Vantage Quota Share"]),
+        "Master MSIG Quota Share": _num(df["MSIG Quota Share"]),
     }).dropna(subset=["Master Internal ID"]).drop_duplicates("Master Internal ID").reset_index(drop=True)
 
 

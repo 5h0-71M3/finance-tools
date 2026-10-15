@@ -61,7 +61,7 @@ BDX_REPORTS: tuple[ReportSpec, ...] = (
     # ── shared across days ────────────────────────────────────────────────────
     _ns("STM Limits Report", "DataQualityLimitsSTMResults", ("day1", "day5", "day10", "aspen"), 8180),
     _ns("STM Transaction Report", "DataQualityDailyTransactionCheckAllTransactionsSTMResults",
-        ("day1", "day5", "zurich", "aspen"), 6275),
+        ("day1", "day5", "day10", "zurich", "aspen"), 6275),
     _looker("Endorsements", "Endorsements", "Endorsement Uuid", ("day1", "day5", "day10", "aspen", "lloyds-er"), 3073),
     _looker("Antares (Modded for Cyber)", r"Antares \(Modded for Cyber\)", "Transaction ID", ("day1", "day5"), 4136),
     _looker("MPL - Premium Breakdown", "MPL - Premium Breakdown", "Transaction ID", ("day5", "day10"), 3551),
@@ -90,6 +90,11 @@ BDX_REPORTS: tuple[ReportSpec, ...] = (
     _ns("Chaucer AC", "ChaucerAccountCurrentSMResults", ("day10",), 6170),
     _ns("Hartford UK AC", "HartfordUKAccountCurrentResults", ("day10",), 9108),
     _ns("MSIG AUS AC", "MSIGAUSAccountCurrentResults", ("day10",), 9357),
+    ReportSpec(  # Looker; its export name uses an underscore and no "T": Endorsement Query_2026-10-08-1409
+        "Endorsement Query", r"Endorsement Query_\d{4}-\d{2}-\d{2}-\d{4}", "CARRIER_ENDORSEMENT_PREMIUM_KEY",
+        ("day10",), "looker", None,
+    ),
+    _looker("MSIG Australia Risk BDX", "MSIG Australia Risk BDX", "Policy Number", ("day10",), None),
     _ns("Allianz France AC", "AllianzFranceAccountCurrentResults", ("day10",), 10174),
     _ns("Allianz Sweden AC", "AllianzSwedenAccountCurrentResults", ("day10",), 9851),
     _ns("Allianz UK Branch of GmbH AC", "AllianzUKBranchofGmbHAccountCurrentResults", ("day10",), 11161),
@@ -125,8 +130,6 @@ DEFERRED: dict[str, str] = {
         "Netsuite Transaction ID repeats (one row per crime coverage line).",
     "Breach Response (Looker 4252, day10/aspen)":
         "Exported without a header row (column0..column3), so there's no key column to name.",
-    "Endorsement Query (Looker, day10 MSIG)":
-        "No unique column. Filtered to MSIG and de-duplicated by policy inside otc.",
     "All Master Log - Not Reported (finance-tools, aspen)":
         "finance-tools output, not an export. Passed into Aspen v2 but unused there (lifecycle.py:143).",
     # not in Downloads
