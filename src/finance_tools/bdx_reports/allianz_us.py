@@ -245,15 +245,16 @@ def _report_for(sources: list[dict], name: str, sample_file: str | None = None) 
     raise LookupError(f"No pipeui report for {name!r}. Register it first (`finance-tools pipeui-register-bdx`).")
 
 
-def _function_ids(client, names: tuple[str, ...]) -> dict[str, str]:
-    """``name → function_id`` for the Allianz US transforms (the copy discovered from our file)."""
+def _function_ids(client, names: tuple[str, ...], transforms_file: str = TRANSFORMS_FILE) -> dict[str, str]:
+    """``name → function_id`` for the transforms discovered from ``transforms_file`` (by default the
+    Allianz US one)."""
     found = {}
     for fn in client.functions():
-        if fn["function_name"] in names and str(fn.get("module_path", "")).endswith(TRANSFORMS_FILE):
+        if fn["function_name"] in names and str(fn.get("module_path", "")).endswith(transforms_file):
             found[fn["function_name"]] = fn["function_id"]
     missing = [n for n in names if n not in found]
     if missing:
-        raise LookupError(f"pipeui hasn't discovered {missing} — is {TRANSFORMS_FILE} in functions_paths?")
+        raise LookupError(f"pipeui hasn't discovered {missing} — is {transforms_file} in functions_paths?")
     return found
 
 

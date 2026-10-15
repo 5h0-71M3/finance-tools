@@ -127,7 +127,7 @@ def test_column_names_after_endorsement_join():
 
 
 def test_outputs_config_one_file_per_book():
-    from pipeui.backend.domain.runner.outputs import fill_period
+    from pipeui.backend.domain.reports.build import fill_period
 
     assert [o["filter_value"] for o in A.OUTPUTS] == list(A.BOOKS)
     assert all(o["filter_column"] == "Book" for o in A.OUTPUTS)
@@ -179,7 +179,7 @@ def test_master_columns_keep_every_row_once_loads_replace_the_month():
     master = _rows(**{
         "Internal ID": [1, 2], "Allianz Quota Share": [0.2, 0.0],
         "Subsidiary [Agency Customer]": [T.US_SUBSIDIARY] * 2, "Policy Version": ["v3", "v3"],
-        "Multi-National Policy": ["No", "No"], "Master Month": [None, None],
+        "Multi-National Policy": ["No", "No"], "Vantage Quota Share": [0.05, 0.0], "Master Month": [None, None],
     })
     assert len(T.allianz_master_columns(master)) == 2
     master["Master Month"] = ["2026-08", "2026-09"]  # legacy stamped extracts: newest month only

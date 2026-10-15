@@ -207,6 +207,53 @@ def allianz_us_bdx(
         raise typer.Exit(1)
 
 
+@app.command()
+def vantage_bdx(
+        step: Annotated[str, typer.Argument(help="setup | check")],
+        month: Annotated[str, typer.Option(help="check: AC month, YYYY-MM. Default: the month 15 days ago")] = None,
+        url: Annotated[str, typer.Option(help="running pipeui; default reads host/port from pipeui.config.json")] = None,
+):
+    """Vantage Day 3 account current in PipeUI. The monthly run is in the PipeUI page itself:
+    Data → STMVantageAccountCurrentResults256 → Outputs → Build output files.
+
+    \b
+    setup  one-time (re-runnable) wiring: the Vantage report gets the Master join, the
+           "Vantage BDX" set, rename / select_columns and its output file
+    check  build a month's file through PipeUI and diff it against the file sent
+           (Account Current/<month>/Day 3)
+    """
+    from datetime import timedelta
+    from pathlib import Path
+
+    import requests
+
+    from finance_tools.bdx_reports import allianz_us as A
+    from finance_tools.bdx_reports import vantage as V
+    from finance_tools.bdx_reports.register import PipeuiClient
+    from finance_tools.io._config import directory_config
+
+    client = PipeuiClient(_pipeui_url(url))
+    try:
+        client.sources()
+    except requests.RequestException:
+        console.print(f"[red]PipeUI isn't reachable at {client.base_url}.[/red] Start it with `finance-tools pipeui` first.")
+        raise typer.Exit(1)
+
+    if step == "setup":
+        for line in V.setup_pipeline(client) or ["already set up — nothing to change"]:
+            console.print(f"  {line}")
+    elif step == "check":
+        month = month or (date.today() - timedelta(days=15)).strftime("%Y-%m")
+        sent_dir = Path(directory_config["account_current"]) / month / V.SENT_FOLDER
+        built, results = V.check(client, month, sent_dir)
+        for f in built["files"]:
+            console.print(f"[green]Wrote[/green] {f['path']} ({f['rows']:,} rows)")
+        console.print(A.parity_report(results) or f"No sent file to compare in {sent_dir}.", markup=False, highlight=False)
+    else:
+        console.print(f"[red]Unknown step {step!r}.[/red] Use setup or check.")
+        raise typer.Exit(1)
+
+
 ############################
 # BDX SUPPORT
 ############################

@@ -207,6 +207,9 @@ class PipeuiClient:
             raise RuntimeError(f"Couldn't attach {builtin_type} to {source_id}: {result}")
         return result
 
+    def detach_builtin(self, source_id: str, step_id: str) -> None:
+        requests.delete(self._url(f"/sources/{source_id}/attach-builtin/{step_id}"), timeout=60).raise_for_status()
+
     def patch_builtin(self, source_id: str, step_id: str, config: dict) -> dict:
         resp = requests.patch(self._url(f"/sources/{source_id}/attach-builtin/{step_id}"), timeout=60,
                               json={"builtin_config": config})
