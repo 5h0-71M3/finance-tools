@@ -14,6 +14,9 @@ venv/
 pipeui.config.json
 pipeui.db
 
+# finance-tools folder paths (machine-specific; see finance_tools.config.example.json)
+finance_tools.config.json
+
 # Editors / OS
 .idea/
 .vscode/

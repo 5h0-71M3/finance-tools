@@ -25,18 +25,10 @@ f = FOLDERS()
 # PIPEUI
 ############################
 def _find_pipeui_project_dir():
-    """The dir owning pipeui.config.json, or None.
+    """The dir owning pipeui.config.json, or None."""
+    from finance_tools.io._config import find_config_dir
 
-    Searches upward from CWD first (user standing in the repo), then from the installed
-    package location (editable install -> repo src/).
-    """
-    from pathlib import Path
-
-    for start in (Path.cwd(), Path(__file__).resolve().parent):
-        for d in (start, *start.parents):
-            if (d / "pipeui.config.json").exists():
-                return d
-    return None
+    return find_config_dir("pipeui.config.json")
 
 
 @app.command()
