@@ -198,7 +198,10 @@ def parity_report(results: list[BookParity]) -> str:
 AC_REPORT = "Allianz US AC"
 MASTER_REPORT = "Allianz US Master"
 MASTER_SHEET = "Master"
-MASTER_PATTERN = r"Masterfile-Cyber-\d+\.\d+-\d{4}-\d{2}-\d{2}"
+MASTER_PATTERN = r"Masterfile-Cyber-\d+\.\d+-\d{4}-\d{2}-\d{2}(_\w+)?"
+"""A re-issued Master keeps a suffix, e.g. ``Masterfile-Cyber-7.2026-2026-08-01_R``."""
+MASTER_PERIOD = r"Masterfile-Cyber-(?P<month>\d+)\.(?P<year>\d{4})"
+"""The month a Masterfile is for, read from its name: pipeui notes it on a build for another month."""
 MASTER_SAMPLE = "Masterfile-Cyber-9.2026-2026-10-01.xlsx"
 AC_SAMPLE = "AllianzAccountCurrentResults871.csv"
 """Example file names: a report renamed in pipeui (e.g. "Allianz Master File") is found by the
@@ -287,7 +290,8 @@ def setup_pipeline(client, endorsements_file: str, limits_file: str, mpl_file: s
     mpl = _report_for(sources, "MPL - Premium Breakdown", mpl_file)
     master = _report_for(sources, MASTER_REPORT, MASTER_SAMPLE)
 
-    master_settings = {"sheet_name": MASTER_SHEET, "ingestion_method": "replace", "pattern": MASTER_PATTERN}
+    master_settings = {"sheet_name": MASTER_SHEET, "ingestion_method": "replace", "pattern": MASTER_PATTERN,
+                       "period_regex": MASTER_PERIOD}
     if any(master.get(k) != v for k, v in master_settings.items()):
         client.patch_source(master["source_id"], master_settings)
         done.append(f"{MASTER_REPORT}: loads the {MASTER_SHEET!r} sheet of Masterfile-Cyber-*.xlsx, replacing all rows")
@@ -339,6 +343,17 @@ def setup_pipeline(client, endorsements_file: str, limits_file: str, mpl_file: s
     return done
 
 
+def sent_file(sent_dir: Path, book: str, month: str) -> Path | None:
+    """The book's sent file: in ``sent_dir`` itself, or in its ``Allianz US`` subfolder (where Jul and
+    Aug 2026 were filed, as .xlsx)."""
+    stem = Path(file_name(book, month)).stem
+    for folder in (sent_dir, sent_dir / "Allianz US"):
+        for ext in (".csv", ".xlsx"):
+            if (folder / f"{stem}{ext}").exists():
+                return folder / f"{stem}{ext}"
+    return None
+
+
 def check(client, month: str, sent_dir: Path) -> tuple[dict, list[BookParity]]:
     """Builds the month's outputs in pipeui (as the Build output files button does) and compares
     each file with the one sent in ``sent_dir``. Returns (the build response, parity per book)."""
@@ -347,7 +362,7 @@ def check(client, month: str, sent_dir: Path) -> tuple[dict, list[BookParity]]:
     paths = {f["name"]: Path(f["path"]) for f in built["files"]}
     results = []
     for book in BOOKS:
-        sent = sent_dir / file_name(book, month)
-        if book in paths and sent.exists():
+        sent = sent_file(sent_dir, book, month)
+        if book in paths and sent is not None:
             results.append(compare_book(book, read_deliverable(paths[book]), read_deliverable(sent)))
     return built, results

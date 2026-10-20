@@ -2,8 +2,8 @@
 against the file that was sent.
 
 The "MSIG AUS AC" report (NetSuite search 9357, full history) is joined to the STM Limits,
-Endorsements, STM Transaction Report, Endorsement Query, MSIG Australia Risk BDX and Master
-reports. The "MSIG AUS BDX" set (``pipeui_functions/msig_aus/transforms.py``) keeps the month's
+Endorsements, STM Transaction Report, Allianz AUS AC (UK format), Endorsement Query, MSIG Australia
+Risk BDX and Master reports. The "MSIG AUS BDX" set (``pipeui_functions/msig_aus/transforms.py``) keeps the month's
 Master rows, ports otc's ``MSIGBDX`` premium fixes and builds MSIG's new written format
 (2026.10.14 field list); ``select_columns`` puts it in MSIG's order, and the report's Output
 writes ``MSIGAccountCurrentResults - <YYYY>.<MM>.xlsx`` plus a control file (Data → the report →
@@ -29,18 +29,30 @@ SET_MEMBERS = (  # the renewal flag before the gate: it needs each policy's full
 )
 TRANSFORMS_FILE = "pipeui_functions/msig_aus/transforms.py"
 
-TXN_PREP = "select_columns + rename"
-"""The STM Transaction Report's prep: SQL built-ins, not a Python step (too big for the 30s worker)."""
-TXN_RENAMES = {"renames": {A.KEY: "Txn Internal ID", **{f: f"Txn {f}" for f in T.TRANSACTION_REPORT_FIELDS}}}
-TXN_SELECT = {"columns": list(TXN_RENAMES["renames"].values()), "excluded": []}
-"""pipeui orders the rename first, so the select names the renamed columns."""
+PREP = "select_columns + rename"
+"""A right-hand report trimmed to a few prefixed columns with SQL built-ins, not a Python step (the
+STM Transaction Report is too big for pipeui's 30s worker)."""
+
+
+def _prep(prefix: str, fields: tuple[str, ...]) -> dict[str, dict]:
+    """The rename to ``<prefix> <field>`` and the select of those names (pipeui orders the rename
+    first, so the select names the renamed columns)."""
+    renames = {A.KEY: f"{prefix} {A.KEY}", **{f: f"{prefix} {f}" for f in fields}}
+    return {"rename": {"renames": renames}, "select_columns": {"columns": list(renames.values()), "excluded": []}}
+
+
+PREPS = {
+    "STM Transaction Report": _prep("Txn", T.TRANSACTION_REPORT_FIELDS),
+    "Allianz AUS AC (UK format)": _prep("Addr", T.ADDRESS_FIELDS),
+}
 
 # (report name, sample export, the report's step or None, left column, right column)
 JOINS = (
     ("STM Limits Report", "DataQualityLimitsSTMResults217.csv", None, A.KEY, A.KEY),
     ("Endorsements", "Endorsements 2026-10-01T1601.csv", None, "Endorsement UUID (endts only)", "Endorsement Uuid"),
     ("STM Transaction Report", "DataQualityDailyTransactionCheckAllTransactionsSTMResults570.csv",
-     TXN_PREP, A.KEY, "Txn Internal ID"),
+     PREP, A.KEY, "Txn Internal ID"),
+    ("Allianz AUS AC (UK format)", "AllianzAUSAccountCurrentUKFormatResults846.csv", PREP, A.KEY, "Addr Internal ID"),
     ("Endorsement Query", "Endorsement Query_2026-10-08-1409.csv",
      "msig_endorsement_exemptions", "Coalition Policy Number", "EQ Coalition Policy Number"),
     ("MSIG Australia Risk BDX", "MSIG Australia Risk BDX 2026-10-09T1616.xlsx",
@@ -104,7 +116,7 @@ def setup_pipeline(client) -> list[str]:
     changes). Returns what was done."""
     done = []
     client.scan_functions()
-    steps = tuple(join[2] for join in JOINS if join[2] and join[2] != TXN_PREP)
+    steps = tuple(join[2] for join in JOINS if join[2] and join[2] != PREP)
     fn = {
         **A._function_ids(client, SET_MEMBERS + steps, TRANSFORMS_FILE),
         **A._function_ids(client, ("allianz_master_columns",)),
@@ -120,8 +132,8 @@ def setup_pipeline(client) -> list[str]:
 
     joined = {s["builtin_config"]["right_source_id"] for s in client.pipeline(sid) if s.get("builtin_type") == "join"}
     for right, step, left_col, right_col in joins:
-        if step == TXN_PREP:
-            done += _ensure_txn_prep(client, right)
+        if step == PREP:
+            done += _ensure_prep(client, right, PREPS[right["source_name"]])
         elif step and A._ensure_function_step(client, right["source_id"], fn[step], step):
             done.append(f"attached {step} to {right['source_name']}")
         if right["source_id"] in joined:
@@ -141,6 +153,8 @@ def setup_pipeline(client) -> list[str]:
     if not any(s.get("set_id") == set_id for s in client.pipeline(sid)):
         client.attach_step(sid, set_id=set_id)
         done.append(f"attached set {FUNCTION_SET}")
+    if _joins_before_set(client, sid, set_id):
+        done.append(f"moved the joins ahead of {FUNCTION_SET}")
 
     select = {"columns": list(SENT_COLUMNS), "excluded": []}
     existing = next((s for s in client.pipeline(sid) if s.get("builtin_type") == "select_columns"), None)
@@ -159,15 +173,32 @@ def setup_pipeline(client) -> list[str]:
     return done
 
 
-def _ensure_txn_prep(client, report: dict) -> list[str]:
-    """The STM Transaction Report's prep: select_columns, then rename to ``Txn *``. Replaces the
-    Python step first used for it (``msig_transaction_report_columns``), which timed out."""
+def _joins_before_set(client, sid: str, set_id: str) -> bool:
+    """A join attached after the set is placed after it, where the set can't see its columns; moves
+    every join ahead of the set. Returns whether the order changed."""
+    steps = client.pipeline(sid)
+    step_id = lambda s: s.get("step_id") or s["source_function_map_id"]  # noqa: E731
+    at = next(i for i, s in enumerate(steps) if s.get("set_id") == set_id)
+    late = [s for s in steps[at:] if s.get("builtin_type") == "join"]
+    if not late:
+        return False
+    order = [s for s in steps if s not in late]
+    order[at:at] = late
+    client.reorder(sid, [step_id(s) for s in order])
+    return True
+
+
+def _ensure_prep(client, report: dict, prep: dict[str, dict]) -> list[str]:
+    """A right-hand report's ``PREPS`` built-ins: select_columns, then rename to ``<prefix> *``. Also
+    drops the Python step first used on the STM Transaction Report
+    (``msig_transaction_report_columns``), which timed out."""
     done, sid = [], report["source_id"]
     for step in client.pipeline(sid):
         if step.get("set_name") == "msig_transaction_report_columns":
             client.detach_step(sid, step["source_function_map_id"])
             done.append(f"detached msig_transaction_report_columns from {report['source_name']}")
-    for builtin_type, config, key in (("select_columns", TXN_SELECT, "columns"), ("rename", TXN_RENAMES, "renames")):
+    for builtin_type, key in (("select_columns", "columns"), ("rename", "renames")):
+        config = prep[builtin_type]
         existing = next((s for s in client.pipeline(sid) if s.get("builtin_type") == builtin_type), None)
         if existing is None:
             client.attach_builtin(sid, builtin_type, config)

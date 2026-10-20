@@ -91,6 +91,22 @@ def test_master_gate_keeps_us_rows_allianz_shares():
     assert len(T.allianz_master_gate(df)) == 1
 
 
+def test_master_pattern_takes_a_reissue_suffix():
+    import re
+    assert re.fullmatch(A.MASTER_PATTERN, "Masterfile-Cyber-7.2026-2026-08-01_R")
+    assert re.fullmatch(A.MASTER_PATTERN, "Masterfile-Cyber-9.2026-2026-10-01")
+    assert not re.fullmatch(A.MASTER_PATTERN, "test_Masterfile-Cyber-9.2026-2026-10-01")
+
+
+def test_sent_file_found_in_the_allianz_us_subfolder(tmp_path):
+    (tmp_path / "Allianz US").mkdir()
+    (tmp_path / "Allianz US" / "AllianzAccountCurrentResults - Admitted - 08.2026.xlsx").touch()
+    (tmp_path / "AllianzAccountCurrentResults - Runoff - 08.2026.csv").touch()
+    assert A.sent_file(tmp_path, "Admitted", "2026-08").parent.name == "Allianz US"
+    assert A.sent_file(tmp_path, "Runoff", "2026-08").suffix == ".csv"
+    assert A.sent_file(tmp_path, "Multi-National", "2026-08") is None
+
+
 def test_book_split_at_the_new_paper_start():
     df = _rows(**{
         "Policy Effective Date": ["07-12-26", "07-13-26", "09-30-26", None, "09-30-26"],

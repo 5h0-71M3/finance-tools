@@ -75,11 +75,11 @@ BDX_REPORTS: tuple[ReportSpec, ...] = (
     _looker("Technical Premium", "Technical Premium", "Quote Coalition Policy Number", ("day5",), 3050),
     _ns("Allianz US AC", "AllianzAccountCurrentResults", ("day5",), 6418),
     ReportSpec(  # the month's Cyber Masterfile (Account Current/<YYYY-MM>); pipeui loads its "Master" sheet
-        "Allianz US Master", r"Masterfile-Cyber-\d+\.\d+-\d{4}-\d{2}-\d{2}", "Internal ID", ("day5",), "masterfile",
+        "Allianz US Master", r"Masterfile-Cyber-\d+\.\d+-\d{4}-\d{2}-\d{2}(_\w+)?", "Internal ID", ("day5",), "masterfile",
         ingestion_method="replace",
     ),
     _ns("Allianz UK AC", "AllianzUKAccountCurrentResults", ("day5",), 6548),
-    _ns("Allianz AUS AC (UK format)", "AllianzAUSAccountCurrentUKFormatResults", ("day5",), 8187),
+    _ns("Allianz AUS AC (UK format)", "AllianzAUSAccountCurrentUKFormatResults", ("day5", "day10"), 8187),
     _ns("Allianz AUS AC", "AllianzAUSAccountCurrentResults", ("day5",), 7537),
     _ns("Allianz Germany AC", "AllianzGERAccountCurrentResults", ("day5",), 9002),
     _ns("Allianz Denmark AC", "AllianzDenmarkAccountCurrentv2Results", ("day5",), 10110),

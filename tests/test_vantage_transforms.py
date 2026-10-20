@@ -58,4 +58,42 @@ def test_package_key_keeps_zero_dollar_replacements():
 def test_renames_land_on_sent_columns_and_layout_is_unique():
     assert len(set(V.SENT_COLUMNS)) == len(V.SENT_COLUMNS)
     assert set(V.RENAMES.values()) <= set(V.SENT_COLUMNS)
-    assert {"Employee Count", "Attachment Point", "Sequence"}.isdisjoint(V.SENT_COLUMNS)
+    assert V.SENT_COLUMNS[-1] == "Sequence"
+    assert V.SET_ORDER[-1] == "vantage_sequence" and set(V.SET_ORDER) == set(V.SET_MEMBERS + V.SHARED_MEMBERS)
+
+
+def test_antares_fields_and_sir_moves_to_attachment_point():
+    df = _rows(**{
+        "Vantage Quota Share %": ["5.00%"] * 3,
+        "Quote N Employees": ["1-25", "26-50", None],
+        "Excess Attachment Point": ["$5,000,000", None, "-"],
+        "SIR": [5000000, 25000, 10000],
+    })
+    out = T.vantage_antares_fields(df)
+    assert list(out["Employee Count"]) == ["1-25", "26-50", None]
+    assert list(out["Attachment Point"]) == [250000.0, 0.0, 0.0]
+    assert list(out["SIR"]) == [0, 25000, 10000]
+
+
+def test_antares_fields_without_the_antares_join():
+    out = T.vantage_antares_fields(_rows(**{"Vantage Quota Share %": ["5.00%"], "SIR": [100]}))
+    assert list(out["Attachment Point"]) == [0.0] and list(out["SIR"]) == [100]
+
+
+def test_sequence_counts_rows():
+    assert list(T.vantage_sequence(_rows(a=["x", "y", "z"]))["Sequence"]) == [1, 2, 3]
+
+
+def test_sent_file_prefers_the_updated_resend(tmp_path):
+    for name in ("VantageAccountCurrentResults202609.csv", "VantageAccountCurrentResults202609 (Updated).csv",
+                 "VantageAccountCurrentResults2026092026-09-17.xlsx"):
+        (tmp_path / name).touch()
+    assert V.sent_file(tmp_path, "2026-09").name.endswith("(Updated).csv")
+    (tmp_path / "VantageAccountCurrentResults202609 (Updated).csv").unlink()
+    assert V.sent_file(tmp_path, "2026-09").name == "VantageAccountCurrentResults202609.csv"
+
+
+def test_antares_pattern_matches_its_exports():
+    from pipeui.backend.domain.sources.create import pattern_matches
+    assert pattern_matches(V.ANTARES.pattern, "Antares (Modded for Cyber) 2026-10-01T1558.csv")
+    assert not pattern_matches(r"Antares (Modded for Cyber) \d+-\d+-\d+T\d+", "Antares (Modded for Cyber) 2026-10-01T1558.csv")

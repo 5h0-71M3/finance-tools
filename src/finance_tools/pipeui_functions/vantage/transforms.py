@@ -14,14 +14,16 @@ Pipeline on the report, in order (``finance-tools vantage-bdx setup`` wires it):
   join  Endorsements            Endorsement UUID (endts only) = Endorsement Uuid (raw)
   join  Master                  Internal ID = Master Internal ID              (transformed)
   set   "Vantage BDX"           vantage_master_gate → vantage_relabel_transactions
-                                → vantage_apply_limits → vantage_module → vantage_package_key
-                                → allianz_us_formats
+                                → vantage_apply_limits → vantage_antares_fields → vantage_module
+                                → vantage_package_key → allianz_us_formats → vantage_sequence
   rename / select_columns       the sent file's names and column order
 
 Rules checked against the July and September 2026 sends:
 - The month's rows are the ones the month's Master tab gives Vantage a share of.
 - Every limit column is the STM Limits report's 100% limit × Vantage Quota Share %, blank as 0.
 - Module is the Full Policy's version suffix (``CCP1097926-03`` → 3), 0 when it has none.
+- Employee Count and Attachment Point come from Antares (Looker 4136); an excess layer with an
+  attachment point goes out with SIR 0 (otc VantageBDX).
 - Dates go out with two-digit years, as sent ('1/1/70 00:00').
 """
 import json
@@ -146,6 +148,26 @@ def vantage_apply_limits(df: pd.DataFrame) -> pd.DataFrame:
     for field in LIMIT_FIELDS:
         if field in df.columns:
             df[field] = _limit(df[field]) * quota_share
+    return df
+
+
+def vantage_antares_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """``Employee Count`` and ``Attachment Point`` from the joined Antares (Modded for Cyber) look,
+    as otc's VantageBDX does: Employee Count is the quote's employee band; Attachment Point is the
+    excess attachment at Vantage's share (blank → 0), and SIR goes to 0 wherever there is one."""
+    df = df.copy()
+    df["Employee Count"] = df["Quote N Employees"] if "Quote N Employees" in df.columns else None
+    attachment = df["Excess Attachment Point"] if "Excess Attachment Point" in df.columns \
+        else pd.Series(None, index=df.index, dtype="object")
+    df["Attachment Point"] = _limit(attachment) * _pct(df[QUOTA_SHARE])
+    df["SIR"] = df["SIR"].where(df["Attachment Point"] == 0, 0)
+    return df
+
+
+def vantage_sequence(df: pd.DataFrame) -> pd.DataFrame:
+    """``Sequence``: the row number in the file, 1..N. Run it last, after any step that drops rows."""
+    df = df.copy()
+    df["Sequence"] = range(1, len(df) + 1)
     return df
 
 

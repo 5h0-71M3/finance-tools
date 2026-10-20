@@ -211,6 +211,13 @@ class PipeuiClient:
         """Removes a function / set step (``DELETE /pipelines/{id}/steps/{map id}``)."""
         requests.delete(self._url(f"/pipelines/{source_id}/steps/{source_function_map_id}"), timeout=60).raise_for_status()
 
+    def reorder(self, source_id: str, step_ids: list[str]) -> None:
+        """Saves a new run order: every step's id (built-ins' ``step_id``, functions' and sets'
+        ``source_function_map_id``). pipeui refuses an order that uses a column before it exists."""
+        resp = requests.put(self._url(f"/pipelines/{source_id}/order"), json={"step_ids": step_ids}, timeout=60)
+        if resp.status_code >= 400:
+            raise RuntimeError(f"Couldn't reorder {source_id}: {resp.text}")
+
     def detach_builtin(self, source_id: str, step_id: str) -> None:
         requests.delete(self._url(f"/sources/{source_id}/attach-builtin/{step_id}"), timeout=60).raise_for_status()
 

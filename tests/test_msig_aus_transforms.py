@@ -110,6 +110,8 @@ def test_new_format_fields():
         "Txn Extended Reporting Period": ["No", "Yes", None],
         "Txn Excess Layer": [0.0, 1.0, None],
         "Risk Industry Name": ["Thrifts and Mortgage Finance", None, None],
+        "Addr Insured Zip Code": ["0828", "2000", None],
+        "Addr Renewal of Policy": [None, "C-51GV-068470-CYBER-2023", None],
     })
     out = T.msig_new_format_fields(df)
     assert list(out["Transaction Description"]) == ["Issuance", "named_insured", "Cancellation - Pro-Rated"]
@@ -123,7 +125,10 @@ def test_new_format_fields():
     assert list(out["Extended Reporting Period"].fillna("")) == ["N", "Y", ""]
     assert list(out["Excess Layer"]) == [0, 1, None]
     assert out.loc[0, "Industry Name"] == "Thrifts and Mortgage Finance"
-    assert out["Insured Primary URL"].isna().all()
+    assert list(out["Insured Zip Code"]) == ["0828", "2000", None]  # text: NT postcodes keep the 0
+    assert out.loc[1, "Renewal of Policy"] == "C-51GV-068470-CYBER-2023"
+    assert out["Insured Primary URL"].isna().all()  # no Addr column joined
+    assert out["Distribution Channel (Specify)"].isna().all()
     assert list(out["Policy Effective Date"]) == ["06-25-26", None, "08-01-26"]
 
 
@@ -132,6 +137,14 @@ def test_layout_is_msigs_field_list_without_duplicates():
     assert set(T.SUBLIMITS) <= set(M.NEW_COLUMNS)
     assert set(T.EXEMPT_INDICATORS.values()) <= set(M.NEW_COLUMNS)
     assert set(T.NO_SOURCE_FIELDS) <= set(M.NEW_COLUMNS)
+    assert set(T.ADDRESS_FIELDS) <= set(M.NEW_COLUMNS)
+
+
+def test_preps_rename_then_select_the_prefixed_names():
+    prep = M.PREPS["Allianz AUS AC (UK format)"]
+    assert prep["rename"]["renames"]["Internal ID"] == "Addr Internal ID"
+    assert prep["select_columns"]["columns"] == list(prep["rename"]["renames"].values())
+    assert {join[0] for join in M.JOINS if join[2] == M.PREP} == set(M.PREPS)
 
 
 def test_sent_file_compares_in_the_new_format():

@@ -14,17 +14,23 @@ from __future__ import annotations
 from pathlib import Path
 
 from finance_tools.bdx_reports import allianz_us as A
+from finance_tools.bdx_reports.manifest import BDX_REPORTS
+
+ANTARES = next(spec for spec in BDX_REPORTS if spec.name == "Antares (Modded for Cyber)")
+"""Looker 4136: Quote N Employees and Excess Attachment Point, joined on External ID = Transaction ID."""
 
 AC_REPORT = "Vantage AC"
 AC_SAMPLE = "STMVantageAccountCurrentResults575.csv"
 
 FUNCTION_SET = "Vantage BDX"
 SET_MEMBERS = (  # the gate first: it cuts the full-history Account Current to the month's rows
-    "vantage_master_gate", "vantage_relabel_transactions", "vantage_apply_limits", "vantage_module",
-    "vantage_package_key",
+    "vantage_master_gate", "vantage_relabel_transactions", "vantage_apply_limits", "vantage_antares_fields",
+    "vantage_module", "vantage_package_key", "vantage_sequence",
 )
 SHARED_MEMBERS = ("allianz_us_formats",)
 """Members reused from the Allianz US transforms (yes/no columns written as 'Yes' / 'No')."""
+SET_ORDER = (*SET_MEMBERS[:-1], *SHARED_MEMBERS, "vantage_sequence")
+"""The set's run order: the row number last."""
 TRANSFORMS_FILE = "pipeui_functions/vantage/transforms.py"
 
 RENAMES = {
@@ -39,8 +45,7 @@ RENAMES = {
 }
 """The joined report's column names → the sent file's."""
 
-# The sent file's columns, in order (Sept 2026 send). Not built: Employee Count (out of scope),
-# Attachment Point (no rule yet for the excess rows it's set on) and Sequence (a row number).
+# The sent file's columns, in order (Sept 2026 send).
 SENT_COLUMNS: tuple[str, ...] = (
     "Internal ID", "External ID", "Insured Name", "Policy Type", "Policy Number", "Module", "Full Policy",
     "Coalition Policy Number", "Policy Effective Date", "Policy Expiration Date", "Transaction Effective Date",
@@ -68,9 +73,10 @@ SENT_COLUMNS: tuple[str, ...] = (
     "DBI Voluntary Shutdown", "DBI Systems Failure", "Contingent Business Interruption (CBI)",
     "CBI Security Failure", "CBI System Failure", "CBI Voluntary Shutdown", "CBI Non IT Security Failure",
     "CBI Non IT System Failure", "Missed Bid", "Corrective Action Plan", "Enhanced Privacy",
-    "Per Event Limit", "Account Domain Names", "NAICS Industry Code", "Industry Classification",
+    "Per Event Limit", "Account Domain Names", "Employee Count", "NAICS Industry Code", "Industry Classification",
     "Anyone Claim (Unlimited Reinstatements)", "Non-IT Vendor CBI", "Package Key", "Run Off [Y/N]",
-    "Run Off Start Date", "Run Off End Date", "Data Recovery and Computer Replacement Costs",
+    "Run Off Start Date", "Run Off End Date", "Attachment Point", "Data Recovery and Computer Replacement Costs",
+    "Sequence",
 )
 
 OUTPUT = {
@@ -102,6 +108,14 @@ def setup_pipeline(client) -> list[str]:
     if A._ensure_function_step(client, master["source_id"], fn["allianz_master_columns"], "allianz_master_columns"):
         done.append(f"attached allianz_master_columns to {master['source_name']}")
 
+    # Employee Count and Attachment Point come from the joined Antares report. Its pattern was saved
+    # with bare parentheses, a regex group, so no "Antares (Modded for Cyber) <ts>" file ever matched
+    # and the watch folder stopped loading it: give it the manifest's escaped pattern.
+    antares = next((s for s in sources if s["source_name"].startswith(ANTARES.name)), None)
+    if antares is not None and antares.get("pattern") != ANTARES.pattern:
+        client.patch_source(antares["source_id"], {"pattern": ANTARES.pattern})
+        done.append(f"{antares['source_name']}: pattern fixed to {ANTARES.pattern}")
+
     steps = client.pipeline(sid)
     joined = {s["builtin_config"]["right_source_id"] for s in steps if s.get("builtin_type") == "join"}
     if master["source_id"] not in joined:
@@ -117,9 +131,10 @@ def setup_pipeline(client) -> list[str]:
         done.append("removed the date_range filter (the Master gate picks the month's rows)")
 
     set_id = client.save_function_set(
-        FUNCTION_SET, [fn[name] for name in SET_MEMBERS + SHARED_MEMBERS],
+        FUNCTION_SET, [fn[name] for name in SET_ORDER],
         "Vantage Day 3 account current: the month's Master rows, soft deletes / binder edits "
-        "relabelled, limits at Vantage's share, Module, Package Key and Yes/No columns as sent.",
+        "relabelled, limits at Vantage's share, Employee Count / Attachment Point from Antares, "
+        "Module, Package Key, Yes/No columns as sent and the Sequence row number.",
     )
     if not any(s.get("set_id") == set_id for s in client.pipeline(sid)):
         client.attach_step(sid, set_id=set_id)
@@ -151,10 +166,11 @@ def _report(sources: list[dict]) -> dict:
 
 
 def sent_file(sent_dir: Path, month: str) -> Path | None:
-    """The newest ``VantageAccountCurrentResults<YYYYMM>*`` in ``sent_dir``."""
+    """The month's sent file in ``sent_dir``: ``VantageAccountCurrentResults<YYYYMM> (Updated).csv``
+    when there is one (the corrected resend), else the plain .csv, else the .xlsx."""
     stem = f"VantageAccountCurrentResults{month.replace('-', '')}"
-    files = [p for p in sent_dir.glob(f"{stem}*") if p.suffix.lower() in (".csv", ".xlsx")]
-    return max(files, key=lambda p: p.stat().st_mtime, default=None)
+    candidates = (f"{stem} (Updated).csv", f"{stem}.csv", f"{stem}.xlsx")
+    return next((sent_dir / name for name in candidates if (sent_dir / name).exists()), None)
 
 
 def check(client, month: str, sent_dir: Path) -> tuple[dict, list[A.BookParity]]:
@@ -166,4 +182,12 @@ def check(client, month: str, sent_dir: Path) -> tuple[dict, list[A.BookParity]]
         return built, []
     sent_df = A.read_deliverable(sent)
     sent_df = sent_df.drop(columns=[c for c in sent_df.columns if c.startswith("Unnamed:")])
-    return built, [A.compare_book(f"Vantage ({sent.name})", A.read_deliverable(Path(built["files"][0]["path"])), sent_df)]
+    built_df = A.read_deliverable(Path(built["files"][0]["path"]))
+    # Sequence is a row counter, and the sent file's row order isn't NetSuite's: check it counts 1..N
+    # instead of comparing it per Internal ID.
+    parity = A.compare_book(f"Vantage ({sent.name})", built_df.drop(columns=["Sequence"], errors="ignore"),
+                            sent_df.drop(columns=["Sequence"], errors="ignore"))
+    if "Sequence" in built_df.columns and list(built_df["Sequence"]) != [str(n) for n in range(1, len(built_df) + 1)]:
+        parity.column_diffs["Sequence"] = len(built_df)
+        parity.examples["Sequence"] = [("", "not 1..N", "1..N")]
+    return built, [parity]

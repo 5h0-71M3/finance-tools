@@ -10,6 +10,7 @@ Pipeline on the report, in order (``finance-tools msig-aus-bdx setup`` wires it)
   join  STM Limits              Internal ID = Internal ID                              (raw)
   join  Endorsements            Endorsement UUID (endts only) = Endorsement Uuid       (raw)
   join  STM Transaction Report  Internal ID = Txn Internal ID      (select_columns + rename: Txn *)
+  join  Allianz AUS AC (UK format)  Internal ID = Addr Internal ID (select_columns + rename: Addr *)
   join  Endorsement Query       Coalition Policy Number = EQ Coalition Policy Number
                                                                    (msig_endorsement_exemptions)
   join  MSIG Australia Risk BDX Coalition Policy Number = Risk Policy Number  (msig_risk_columns)
@@ -101,12 +102,16 @@ TRANSACTION_REPORT_FIELDS = (
 RISK_FIELDS = ("Industry Category", "Industry Name", "N Employees", "Company Revenue")
 """From the MSIG Australia Risk BDX (Looker), one row per policy."""
 
-NO_SOURCE_FIELDS = (
+ADDRESS_FIELDS = (
     "Insured Address Line 1", "Insured Address Line 2", "Insured City", "Insured Primary URL",
     "Insured Zip Code", "Broker Address", "Broker City", "Broker State", "Broker Zip Code",
-    "Renewal of Policy", "Distribution Channel (Specify)",
+    "Renewal of Policy",
 )
-"""Asked for by MSIG but on no report that covers Australia yet; they go out blank."""
+"""From the Allianz AUS AC (UK format) search (NS 8187), which despite its name has every Australian
+transaction; joined on Internal ID and prepped like the STM Transaction Report (``Addr <field>``)."""
+
+NO_SOURCE_FIELDS = ("Distribution Channel (Specify)",)
+"""Asked for by MSIG but on no report that covers Australia yet; it goes out blank."""
 
 DATE_COLUMNS = (
     "Policy Effective Date", "Policy Expiration Date", "Transaction Effective Date",
@@ -310,6 +315,7 @@ def msig_new_format_fields(df: pd.DataFrame) -> pd.DataFrame:
     - from the STM Transaction Report: Policy Status Indicator, GICS Code, ERP Tail Date, Extended
       Reporting Period (Y / N), Excess Layer, Insured State
     - from the Risk BDX: Industry Category, Industry Name, N Employees, Company Revenue
+    - from the Allianz AUS AC (UK format): insured and broker addresses, Renewal of Policy
     - blank: the fields no Australian report carries yet (``NO_SOURCE_FIELDS``)
     """
     df = df.copy()
@@ -332,6 +338,9 @@ def msig_new_format_fields(df: pd.DataFrame) -> pd.DataFrame:
 
     for field in RISK_FIELDS:
         df[field] = df.get(f"Risk {field}")
+
+    for field in ADDRESS_FIELDS:
+        df[field] = df.get(f"Addr {field}")
 
     for field in NO_SOURCE_FIELDS:
         df[field] = None
